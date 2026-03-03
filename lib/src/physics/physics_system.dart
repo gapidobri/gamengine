@@ -36,14 +36,22 @@ class PhysicsSystem extends System {
       return;
     }
 
-    final step = dt > maxDeltaTime ? maxDeltaTime : dt;
+    var remaining = dt;
+    while (remaining > 0) {
+      final step = remaining > maxDeltaTime ? maxDeltaTime : remaining;
+      _integrateStep(step);
+      remaining -= step;
+    }
+  }
+
+  void _integrateStep(double step) {
     final gravitySources = world.query2<Transform, GravitySource>().toList(
       growable: false,
     );
 
     for (final entity in world.query2<Transform, RigidBody>()) {
-      final transform = world.get<Transform>(entity);
-      final rigidBody = world.get<RigidBody>(entity);
+      final transform = entity.get<Transform>();
+      final rigidBody = entity.get<RigidBody>();
 
       if (rigidBody.isStatic) {
         rigidBody.acceleration.setZero();
@@ -108,8 +116,8 @@ class PhysicsSystem extends System {
     out.setZero();
 
     for (final sourceEntity in gravitySources) {
-      final sourceTransform = world.get<Transform>(sourceEntity);
-      final source = world.get<GravitySource>(sourceEntity);
+      final sourceTransform = sourceEntity.get<Transform>();
+      final source = sourceEntity.get<GravitySource>();
       if (!source.enabled || source.mass <= 0) {
         continue;
       }

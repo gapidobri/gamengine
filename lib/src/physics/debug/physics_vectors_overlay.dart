@@ -61,8 +61,8 @@ class _PhysicsVectorsPainter extends CustomPainter {
     final forceScale = 0.00012;
 
     for (final entity in world.query2<Transform, RigidBody>()) {
-      final transform = world.get<Transform>(entity);
-      final rigidBody = world.get<RigidBody>(entity);
+      final transform = entity.get<Transform>();
+      final rigidBody = entity.get<RigidBody>();
       if (rigidBody.isStatic || !rigidBody.useGravity) {
         continue;
       }

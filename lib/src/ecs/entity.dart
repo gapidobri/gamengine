@@ -13,7 +13,15 @@ class Entity {
     _components.remove(componentType);
   }
 
-  T? get<T extends Component>() {
+  T get<T extends Component>() {
+    return _components[T]! as T;
+  }
+
+  T? tryGet<T extends Component>() {
     return _components[T] as T?;
+  }
+
+  bool has<T extends Component>() {
+    return tryGet<T>() != null;
   }
 }

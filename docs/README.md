@@ -7,6 +7,7 @@ This folder documents all public engine modules exported by `lib/gamengine.dart`
 - [Core ECS](./ecs.md)
 - [Physics](./physics.md)
 - [Render](./render.md)
+- [Input](./input.md)
 - [Assets](./asset.md)
 - [UI Hooks](./ui.md)
 - [Persistence](./persistence.md)

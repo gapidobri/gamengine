@@ -23,7 +23,7 @@ class Engine {
     world.removeEntity(entity);
   }
 
-  void addSystem(System system, int priority) {
+  void addSystem(System system) {
     _systems.add(system);
     _systems.sort((a, b) => b.priority.compareTo(a.priority));
   }

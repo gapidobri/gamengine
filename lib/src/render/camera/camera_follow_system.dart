@@ -26,9 +26,6 @@ class CameraFollowSystem extends System {
   @override
   void update(double dt) {
     final targetTransform = target.get<Transform>();
-    if (targetTransform == null) {
-      return;
-    }
 
     final t = dt <= 0 ? 1.0 : (1.0 - math.exp(-smoothing * dt));
     final targetX = targetTransform.position.x + offsetX;

@@ -19,13 +19,17 @@ class World {
     _entities.clear();
   }
 
-  T get<T extends Component>(Entity entity) {
-    return entity.get<T>() as T;
+  Iterable<Entity> query<T extends Component>() sync* {
+    for (final entity in _entities) {
+      if (entity.tryGet<T>() != null) {
+        yield entity;
+      }
+    }
   }
 
   Iterable<Entity> query2<T1 extends Component, T2 extends Component>() sync* {
     for (final entity in _entities) {
-      if (entity.get<T1>() != null && entity.get<T2>() != null) {
+      if (entity.tryGet<T1>() != null && entity.tryGet<T2>() != null) {
         yield entity;
       }
     }

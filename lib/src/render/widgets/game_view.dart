@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:gamengine/src/ecs/engine.dart';
-import 'package:gamengine/src/ecs/world.dart';
-import 'package:gamengine/src/physics/physics_system.dart';
-import 'package:gamengine/src/physics/debug/physics_vectors_overlay.dart';
+import 'package:gamengine/src/input/events/raw_input_event.dart';
 import 'package:gamengine/src/render/camera/camera_state.dart';
 import 'package:gamengine/src/render/debug/debug_overlay.dart';
 import 'package:gamengine/src/render/debug/debug_stats.dart';
@@ -15,9 +13,6 @@ class GameView extends StatefulWidget {
   final RenderQueue queue;
   final CameraState camera;
   final DebugStats? debugStats;
-  final World? physicsOverlayWorld;
-  final bool showPhysicsVectors;
-  final double physicsGravitationalConstant;
   final bool autoStart;
 
   const GameView({
@@ -26,10 +21,6 @@ class GameView extends StatefulWidget {
     required this.queue,
     required this.camera,
     this.debugStats,
-    this.physicsOverlayWorld,
-    this.showPhysicsVectors = false,
-    this.physicsGravitationalConstant =
-        PhysicsSystem.universalGravitationalConstant,
     this.autoStart = true,
   });
 
@@ -39,6 +30,8 @@ class GameView extends StatefulWidget {
 
 class _GameViewState extends State<GameView>
     with SingleTickerProviderStateMixin {
+  final _focusNode = FocusNode();
+
   late final Ticker _ticker;
   Duration? _lastTick;
 
@@ -80,12 +73,22 @@ class _GameViewState extends State<GameView>
     super.dispose();
   }
 
+  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    widget.engine.events.emit(RawInputEvent(keyEvent: event));
+    return .handled;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final gameCanvas = RepaintBoundary(
-      child: CustomPaint(
-        painter: Painter(queue: widget.queue, camera: widget.camera),
-        size: Size.infinite,
+    final gameCanvas = Focus(
+      focusNode: _focusNode,
+      autofocus: true,
+      onKeyEvent: _handleKeyEvent,
+      child: RepaintBoundary(
+        child: CustomPaint(
+          painter: Painter(queue: widget.queue, camera: widget.camera),
+          size: Size.infinite,
+        ),
       ),
     );
 
@@ -98,12 +101,6 @@ class _GameViewState extends State<GameView>
       fit: StackFit.expand,
       children: [
         gameCanvas,
-        if (widget.showPhysicsVectors && widget.physicsOverlayWorld != null)
-          PhysicsVectorsOverlay(
-            world: widget.physicsOverlayWorld!,
-            camera: widget.camera,
-            queue: widget.queue,
-          ),
         DebugOverlay(stats: debugStats),
       ],
     );

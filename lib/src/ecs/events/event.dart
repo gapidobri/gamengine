@@ -1,1 +1,3 @@
-abstract class GameEvent {}
+abstract class GameEvent {
+  const GameEvent();
+}

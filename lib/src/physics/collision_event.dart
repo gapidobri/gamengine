@@ -10,7 +10,7 @@ class CollisionEvent extends GameEvent {
   final double relativeSpeed;
   final double penetration;
 
-  CollisionEvent({
+  const CollisionEvent({
     required this.entityA,
     required this.entityB,
     required this.point,

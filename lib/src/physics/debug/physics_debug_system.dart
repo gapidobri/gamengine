@@ -31,7 +31,7 @@ class PhysicsDebugSystem extends System {
     var maxSpeed = 0.0;
 
     for (final entity in world.query2<Transform, RigidBody>()) {
-      final body = world.get<RigidBody>(entity);
+      final body = entity.get<RigidBody>();
       totalBodies++;
       if (body.isStatic) {
         staticBodies++;

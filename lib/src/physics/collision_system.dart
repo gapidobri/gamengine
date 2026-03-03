@@ -45,27 +45,27 @@ class CollisionSystem extends System {
 
     final colliders = <Entity>[];
     for (final entity in world.entities) {
-      if (entity.get<Collider>() != null && entity.get<Transform>() != null) {
+      if (entity.has<Collider>() && entity.has<Transform>()) {
         colliders.add(entity);
       }
     }
 
     for (var i = 0; i < colliders.length; i++) {
       final entityA = colliders[i];
-      final colliderA = world.get<Collider>(entityA);
+      final colliderA = entityA.get<Collider>();
       if (!colliderA.enabled || colliderA.radius <= 0) {
         continue;
       }
-      final transformA = world.get<Transform>(entityA);
+      final transformA = entityA.get<Transform>();
       final bodyA = entityA.get<RigidBody>();
 
       for (var j = i + 1; j < colliders.length; j++) {
         final entityB = colliders[j];
-        final colliderB = world.get<Collider>(entityB);
+        final colliderB = entityB.get<Collider>();
         if (!colliderB.enabled || colliderB.radius <= 0) {
           continue;
         }
-        final transformB = world.get<Transform>(entityB);
+        final transformB = entityB.get<Transform>();
         final bodyB = entityB.get<RigidBody>();
 
         _normal

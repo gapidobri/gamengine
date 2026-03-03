@@ -85,8 +85,8 @@ class ParticleSystem extends System implements SnapshotParticipant {
 
   void _emitFromComponents(double dt) {
     for (final entity in world.query2<Transform, ParticleEmitter>()) {
-      final transform = world.get<Transform>(entity);
-      final emitter = world.get<ParticleEmitter>(entity);
+      final transform = entity.get<Transform>();
+      final emitter = entity.get<ParticleEmitter>();
       if (!emitter.enabled) {
         continue;
       }

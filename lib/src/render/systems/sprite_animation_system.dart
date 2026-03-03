@@ -26,8 +26,8 @@ class SpriteAnimationSystem extends System {
 
   void _syncInternal({required double dt, required bool advanceTime}) {
     for (final entity in world.query2<Sprite, AnimatedSprite>()) {
-      final sprite = world.get<Sprite>(entity);
-      final animation = world.get<AnimatedSprite>(entity);
+      final sprite = entity.get<Sprite>();
+      final animation = entity.get<AnimatedSprite>();
       final image = sprite.image;
 
       if (image == null) {

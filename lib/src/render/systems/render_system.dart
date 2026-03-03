@@ -50,8 +50,8 @@ class RenderSystem extends System {
 
   void _emitSpriteCommands(Rect cullRect) {
     for (final entity in world.query2<Transform, Sprite>()) {
-      final transform = world.get<Transform>(entity);
-      final sprite = world.get<Sprite>(entity);
+      final transform = entity.get<Transform>();
+      final sprite = entity.get<Sprite>();
       final image = sprite.image;
 
       if (image == null) {
