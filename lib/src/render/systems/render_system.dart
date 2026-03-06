@@ -5,6 +5,7 @@ import 'package:gamengine/src/ecs/components/transform.dart';
 import 'package:gamengine/src/ecs/world.dart';
 import 'package:gamengine/src/render/camera/camera_state.dart';
 import 'package:gamengine/src/render/commands/render_commands.dart';
+import 'package:gamengine/src/render/components/circle_shape.dart';
 import 'package:gamengine/src/render/components/sprite.dart';
 import 'package:gamengine/src/render/systems/particle_system.dart';
 import 'package:gamengine/src/render/core/render_metrics.dart';
@@ -36,6 +37,7 @@ class RenderSystem extends System {
 
     final cullRect = camera.worldCullRect;
     _emitSpriteCommands(cullRect);
+    _emitCircleCommands(cullRect);
     final particles = particleSystem;
     if (particles != null) {
       metrics.sceneItems += particles.aliveCount;
@@ -71,6 +73,26 @@ class RenderSystem extends System {
           rotation: transform.rotation,
           scaleX: transform.scale.x,
           scaleY: transform.scale.y,
+          z: sprite.z,
+        ),
+        cullRect,
+      );
+    }
+  }
+
+  void _emitCircleCommands(Rect cullRect) {
+    for (final entity in world.query2<Transform, CircleShape>()) {
+      final transform = entity.get<Transform>();
+      final circle = entity.get<CircleShape>();
+
+      metrics.sceneItems++;
+
+      _addIfVisible(
+        DrawCircleCommand(
+          center: Offset(transform.position.x, transform.position.y),
+          radius: circle.radius,
+          paint: circle.paint,
+          z: circle.z,
         ),
         cullRect,
       );

@@ -36,7 +36,6 @@ class _EngineDemoPageState extends State<EngineDemoPage> {
   late final Entity _rocketEntity;
   late final RenderQueue _queue;
   late final RenderMetrics _renderMetrics;
-  late final DebugStats _debugStats;
   late final HudStateStore<FlightHudState> _hudStore;
   late final CameraState _camera;
   late final WorldStateSerializer _worldSerializer;
@@ -59,7 +58,6 @@ class _EngineDemoPageState extends State<EngineDemoPage> {
     _engine = Engine(world: _world);
     _queue = RenderQueue();
     _renderMetrics = RenderMetrics();
-    _debugStats = DebugStats();
     _hudStore = HudStateStore(const FlightHudState.empty());
     _worldSerializer = WorldStateSerializer();
     DefaultWorldComponentCodecs.register(_worldSerializer);
@@ -215,16 +213,7 @@ class _EngineDemoPageState extends State<EngineDemoPage> {
         particleSystem: _particleSystem,
       ),
     );
-    _engine.addSystem(
-      DebugSystem(stats: _debugStats, renderMetrics: _renderMetrics),
-    );
-    _engine.addSystem(
-      PhysicsDebugSystem(
-        world: _world,
-        stats: _debugStats,
-        physicsSystem: physicsSystem,
-      ),
-    );
+
     _spriteAnimationSystem.syncNow();
   }
 
@@ -531,7 +520,6 @@ class _EngineDemoPageState extends State<EngineDemoPage> {
                       engine: _engine,
                       queue: _queue,
                       camera: _camera,
-                      debugStats: _debugStats,
                     ),
                   ),
                   Positioned(
@@ -566,7 +554,6 @@ class _EngineDemoPageState extends State<EngineDemoPage> {
     setState(() {
       _savedWorld = serialized;
     });
-    _debugStats.setLine('Save', 'Snapshot stored (${serialized.length} bytes)');
   }
 
   void _loadWorld() {
@@ -585,7 +572,6 @@ class _EngineDemoPageState extends State<EngineDemoPage> {
     _rebuildSpritesFromTags();
     _spriteAnimationSystem.syncNow();
     _retargetCameraFollow(snapToTarget: true);
-    _debugStats.setLine('Save', 'Snapshot loaded');
   }
 
   void _rebuildSpritesFromTags() {

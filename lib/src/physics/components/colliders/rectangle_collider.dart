@@ -1,14 +1,9 @@
 import 'package:gamengine/src/ecs/components/component.dart';
+import 'package:gamengine/src/physics/components/collider.dart';
 
-abstract class CollisionShape implements Component {
-  bool get enabled;
-  double get restitution;
-  double get staticFriction;
-  double get dynamicFriction;
-}
-
-class Collider extends Component implements CollisionShape {
-  double radius;
+class RectangleCollider extends Component implements CollisionShape {
+  double halfWidth;
+  double halfHeight;
   @override
   double restitution;
   @override
@@ -18,8 +13,9 @@ class Collider extends Component implements CollisionShape {
   @override
   bool enabled;
 
-  Collider({
-    required this.radius,
+  RectangleCollider({
+    required this.halfWidth,
+    required this.halfHeight,
     this.restitution = 0.4,
     this.staticFriction = 0.6,
     this.dynamicFriction = 0.45,

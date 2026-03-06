@@ -72,9 +72,10 @@ class ParticleSystem extends System implements SnapshotParticipant {
         DrawCircleCommand(
           center: Offset(p.position.x, p.position.y),
           radius: radius,
-          color:
-              Color.lerp(p.colorStart, p.colorEnd, p.normalizedAge) ??
-              p.colorEnd,
+          paint: Paint()
+            ..color =
+                Color.lerp(p.colorStart, p.colorEnd, p.normalizedAge) ??
+                p.colorEnd,
           z: p.z,
         ),
       );

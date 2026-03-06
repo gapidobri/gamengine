@@ -11,6 +11,7 @@ class DrawSpriteCommand extends RenderCommand {
   final double scaleX;
   final double scaleY;
   final Offset anchor;
+  final Paint? paint;
 
   DrawSpriteCommand({
     required this.image,
@@ -20,6 +21,7 @@ class DrawSpriteCommand extends RenderCommand {
     this.scaleX = 0,
     this.scaleY = 0,
     this.anchor = const Offset(0.5, 0.5),
+    this.paint,
     super.z = 0,
   });
 
@@ -27,12 +29,7 @@ class DrawSpriteCommand extends RenderCommand {
   Rect get worldBounds {
     final source =
         src ??
-        Rect.fromLTWH(
-          0,
-          0,
-          image.width.toDouble(),
-          image.height.toDouble(),
-        );
+        Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
 
     final width = source.width * scaleX.abs();
     final height = source.height * scaleY.abs();

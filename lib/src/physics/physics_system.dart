@@ -56,7 +56,7 @@ class PhysicsSystem extends System {
       if (rigidBody.isStatic) {
         rigidBody.acceleration.setZero();
         rigidBody.accumulatedForce.setZero();
-        rigidBody.lastAppliedForce.setZero();
+        rigidBody.accumulatedTorque = 0;
         continue;
       }
 
@@ -81,15 +81,15 @@ class PhysicsSystem extends System {
         rigidBody.acceleration.add(_tmp);
       }
 
-      if (rigidBody.mass > 0) {
-        rigidBody.lastAppliedForce
-          ..setFrom(rigidBody.acceleration)
-          ..scale(rigidBody.mass);
-      } else {
-        rigidBody.lastAppliedForce.setZero();
-      }
-
       rigidBody.velocity.addScaled(rigidBody.acceleration, step);
+
+      final invInertia = rigidBody.inverseInertia;
+      final angularAccelerationFromTorque = invInertia > 0
+          ? rigidBody.accumulatedTorque * invInertia
+          : 0.0;
+      final totalAngularAcceleration =
+          rigidBody.angularAcceleration + angularAccelerationFromTorque;
+      rigidBody.angularVelocity += totalAngularAcceleration * step;
 
       if (rigidBody.linearDamping > 0) {
         final damping = math.max(0.0, 1.0 - (rigidBody.linearDamping * step));
@@ -105,6 +105,7 @@ class PhysicsSystem extends System {
       }
 
       rigidBody.accumulatedForce.setZero();
+      rigidBody.accumulatedTorque = 0;
     }
   }
 

@@ -2,18 +2,15 @@ import 'package:gamengine/src/ecs/entity.dart';
 import 'package:gamengine/src/ecs/events/event_bus.dart';
 import 'package:gamengine/src/ecs/system.dart';
 import 'package:gamengine/src/ecs/world.dart';
-import 'package:gamengine/src/ui/ui_command_queue.dart';
 
 class Engine {
   final World world;
   final EventBus events;
-  final UiCommandQueue uiCommands;
   final _systems = <System>[];
 
-  Engine({World? world, EventBus? events, UiCommandQueue? uiCommands})
+  Engine({World? world, EventBus? events})
     : world = world ?? World(),
-      events = events ?? EventBus(),
-      uiCommands = uiCommands ?? UiCommandQueue();
+      events = events ?? EventBus();
 
   void addEntity(Entity entity) {
     world.addEntity(entity);
@@ -34,11 +31,9 @@ class Engine {
 
   void update(double dt) {
     events.beginFrame();
-    uiCommands.beginFrame();
     for (final system in _systems) {
       system.update(dt);
     }
     events.endFrame();
-    uiCommands.endFrame();
   }
 }

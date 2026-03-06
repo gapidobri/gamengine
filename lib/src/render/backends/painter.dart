@@ -5,8 +5,8 @@ import 'package:gamengine/src/render/core/render_queue.dart';
 
 class Painter extends CustomPainter {
   final RenderQueue queue;
+  final Paint _circlePaint = Paint()..color = Color(0xFFFFFFFF);
   final Paint _spritePaint = Paint();
-  final Paint _circlePaint = Paint();
   final List<RSTransform> _atlasTransforms = <RSTransform>[];
   final List<Rect> _atlasSources = <Rect>[];
 
@@ -17,9 +17,8 @@ class Painter extends CustomPainter {
     required this.queue,
     CameraState? camera,
     this.useAtlasBatching = true,
-  })
-    : camera = camera ?? CameraState(),
-      super(repaint: queue);
+  }) : camera = camera ?? CameraState(),
+       super(repaint: queue);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -80,7 +79,7 @@ class Painter extends CustomPainter {
     canvas.rotate(cmd.rotation);
 
     final dst = Rect.fromLTWH(-ax, -ay, w, h);
-    canvas.drawImageRect(cmd.image, src, dst, _spritePaint);
+    canvas.drawImageRect(cmd.image, src, dst, cmd.paint ?? _spritePaint);
 
     canvas.restore();
   }
@@ -96,6 +95,9 @@ class Painter extends CustomPainter {
   }
 
   bool _isAtlasEligible(DrawSpriteCommand cmd) {
+    if (cmd.paint != null) {
+      return false;
+    }
     final sx = cmd.scaleX;
     final sy = cmd.scaleY;
     if (sx <= 0 || sy <= 0) {
@@ -140,8 +142,7 @@ class Painter extends CustomPainter {
   }
 
   void _drawCircle(Canvas canvas, DrawCircleCommand cmd) {
-    _circlePaint.color = cmd.color;
-    canvas.drawCircle(cmd.center, cmd.radius, _circlePaint);
+    canvas.drawCircle(cmd.center, cmd.radius, cmd.paint ?? _circlePaint);
   }
 
   @override

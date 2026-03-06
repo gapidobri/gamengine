@@ -3,8 +3,6 @@ import 'package:flutter/scheduler.dart';
 import 'package:gamengine/src/ecs/engine.dart';
 import 'package:gamengine/src/input/events/raw_input_event.dart';
 import 'package:gamengine/src/render/camera/camera_state.dart';
-import 'package:gamengine/src/render/debug/debug_overlay.dart';
-import 'package:gamengine/src/render/debug/debug_stats.dart';
 import 'package:gamengine/src/render/backends/painter.dart';
 import 'package:gamengine/src/render/core/render_queue.dart';
 
@@ -12,7 +10,6 @@ class GameView extends StatefulWidget {
   final Engine engine;
   final RenderQueue queue;
   final CameraState camera;
-  final DebugStats? debugStats;
   final bool autoStart;
 
   const GameView({
@@ -20,7 +17,6 @@ class GameView extends StatefulWidget {
     required this.engine,
     required this.queue,
     required this.camera,
-    this.debugStats,
     this.autoStart = true,
   });
 
@@ -80,7 +76,7 @@ class _GameViewState extends State<GameView>
 
   @override
   Widget build(BuildContext context) {
-    final gameCanvas = Focus(
+    final canvas = Focus(
       focusNode: _focusNode,
       autofocus: true,
       onKeyEvent: _handleKeyEvent,
@@ -92,17 +88,6 @@ class _GameViewState extends State<GameView>
       ),
     );
 
-    final debugStats = widget.debugStats;
-    if (debugStats == null) {
-      return gameCanvas;
-    }
-
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        gameCanvas,
-        DebugOverlay(stats: debugStats),
-      ],
-    );
+    return canvas;
   }
 }

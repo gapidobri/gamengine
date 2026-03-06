@@ -1,14 +1,19 @@
 import 'dart:math' as math;
 
+import 'package:gamengine/src/ecs/components/transform.dart';
 import 'package:gamengine/src/ecs/entity.dart';
 import 'package:gamengine/src/ecs/events/event_bus.dart';
 import 'package:gamengine/src/ecs/system.dart';
 import 'package:gamengine/src/ecs/world.dart';
 import 'package:gamengine/src/physics/collision_event.dart';
 import 'package:gamengine/src/physics/components/collider.dart';
+import 'package:gamengine/src/physics/components/colliders/rectangle_collider.dart';
 import 'package:gamengine/src/physics/components/rigid_body.dart';
-import 'package:gamengine/src/ecs/components/transform.dart';
 import 'package:vector_math/vector_math_64.dart';
+
+part 'collision_system_checks.dart';
+part 'collision_system_resolution.dart';
+part 'collision_system_types.dart';
 
 class CollisionSystem extends System {
   final World world;
@@ -16,12 +21,17 @@ class CollisionSystem extends System {
   final double positionCorrectionPercent;
   final double positionCorrectionSlop;
 
-  final Vector2 _normal = Vector2.zero();
-  final Vector2 _contactPoint = Vector2.zero();
   final Vector2 _relativeVelocity = Vector2.zero();
+  final Vector2 _velocityA = Vector2.zero();
+  final Vector2 _velocityB = Vector2.zero();
+  final Vector2 _contactOffsetA = Vector2.zero();
+  final Vector2 _contactOffsetB = Vector2.zero();
   final Vector2 _impulse = Vector2.zero();
   final Vector2 _tangent = Vector2.zero();
   final Vector2 _normalProjection = Vector2.zero();
+  final CollisionManifold _manifold = CollisionManifold();
+  final List<_ColliderEntry> _colliders = <_ColliderEntry>[];
+  final List<_CollisionRegistration> _checks = <_CollisionRegistration>[];
   final List<CollisionEvent> _events = <CollisionEvent>[];
 
   CollisionSystem({
@@ -29,12 +39,73 @@ class CollisionSystem extends System {
     this.eventBus,
     this.positionCorrectionPercent = 0.8,
     this.positionCorrectionSlop = 0.01,
-  });
+  }) {
+    registerCheck<Collider, Collider>(_checkCircleCircle);
+    registerCheck<RectangleCollider, RectangleCollider>(
+      _checkRectangleRectangle,
+    );
+    registerCheck<RectangleCollider, Collider>(_checkRectangleCircle);
+  }
 
   @override
   int get priority => 490;
 
   List<CollisionEvent> get events => _events;
+
+  void registerCheck<TA extends CollisionShape, TB extends CollisionShape>(
+    CollisionCheck<TA, TB> check, {
+    bool symmetric = true,
+  }) {
+    _checks.add(
+      _CollisionRegistration(
+        matches: (CollisionShape a, CollisionShape b) => a is TA && b is TB,
+        evaluate:
+            ({
+              required Transform transformA,
+              required CollisionShape colliderA,
+              required Transform transformB,
+              required CollisionShape colliderB,
+              required CollisionManifold manifold,
+            }) => check(
+              transformA: transformA,
+              colliderA: colliderA as TA,
+              transformB: transformB,
+              colliderB: colliderB as TB,
+              manifold: manifold,
+            ),
+      ),
+    );
+
+    if (!symmetric || TA == TB) {
+      return;
+    }
+
+    _checks.add(
+      _CollisionRegistration(
+        matches: (CollisionShape a, CollisionShape b) => a is TB && b is TA,
+        evaluate:
+            ({
+              required Transform transformA,
+              required CollisionShape colliderA,
+              required Transform transformB,
+              required CollisionShape colliderB,
+              required CollisionManifold manifold,
+            }) {
+              final hit = check(
+                transformA: transformB,
+                colliderA: colliderB as TA,
+                transformB: transformA,
+                colliderB: colliderA as TB,
+                manifold: manifold,
+              );
+              if (hit) {
+                manifold.normal.scale(-1);
+              }
+              return hit;
+            },
+      ),
+    );
+  }
 
   @override
   void update(double dt) {
@@ -43,221 +114,117 @@ class CollisionSystem extends System {
       return;
     }
 
-    final colliders = <Entity>[];
-    for (final entity in world.entities) {
-      if (entity.has<Collider>() && entity.has<Transform>()) {
-        colliders.add(entity);
-      }
-    }
+    _collectColliders();
 
-    for (var i = 0; i < colliders.length; i++) {
-      final entityA = colliders[i];
-      final colliderA = entityA.get<Collider>();
-      if (!colliderA.enabled || colliderA.radius <= 0) {
-        continue;
-      }
-      final transformA = entityA.get<Transform>();
-      final bodyA = entityA.get<RigidBody>();
+    for (var i = 0; i < _colliders.length; i++) {
+      final entryA = _colliders[i];
 
-      for (var j = i + 1; j < colliders.length; j++) {
-        final entityB = colliders[j];
-        final colliderB = entityB.get<Collider>();
-        if (!colliderB.enabled || colliderB.radius <= 0) {
-          continue;
-        }
-        final transformB = entityB.get<Transform>();
-        final bodyB = entityB.get<RigidBody>();
-
-        _normal
-          ..setFrom(transformB.position)
-          ..sub(transformA.position);
-
-        final dist2 = _normal.length2;
-        final radiusSum = colliderA.radius + colliderB.radius;
-        final radiusSum2 = radiusSum * radiusSum;
-        if (dist2 >= radiusSum2) {
+      for (var j = i + 1; j < _colliders.length; j++) {
+        final entryB = _colliders[j];
+        if (entryA.entity == entryB.entity) {
           continue;
         }
 
-        final distance = dist2 == 0 ? 0.0 : math.sqrt(dist2);
-        if (distance > 0) {
-          _normal.scale(1.0 / distance);
-        } else {
-          _normal
-            ..x = 1
-            ..y = 0;
+        final check = _resolveCheck(entryA.collider, entryB.collider);
+        if (check == null) {
+          continue;
         }
-        final penetration = radiusSum - distance;
-        final relativeSpeed = _closingSpeed(bodyA: bodyA, bodyB: bodyB);
 
-        _contactPoint
-          ..setFrom(_normal)
-          ..scale(colliderA.radius)
-          ..add(transformA.position);
+        if (!check(
+          transformA: entryA.transform,
+          colliderA: entryA.collider,
+          transformB: entryB.transform,
+          colliderB: entryB.collider,
+          manifold: _manifold,
+        )) {
+          continue;
+        }
+
+        final relativeSpeed = _closingSpeed(
+          transformA: entryA.transform,
+          bodyA: entryA.body,
+          contactPointA: _manifold.contactPoint,
+          transformB: entryB.transform,
+          bodyB: entryB.body,
+          contactPointB: _manifold.contactPoint,
+          normal: _manifold.normal,
+        );
 
         final event = CollisionEvent(
-          entityA: entityA,
-          entityB: entityB,
-          point: Vector2.copy(_contactPoint),
-          normal: Vector2.copy(_normal),
+          entityA: entryA.entity,
+          entityB: entryB.entity,
+          point: Vector2.copy(_manifold.contactPoint),
+          normal: Vector2.copy(_manifold.normal),
           relativeSpeed: relativeSpeed,
-          penetration: penetration,
+          penetration: _manifold.penetration,
         );
         _events.add(event);
         eventBus?.emit(event);
 
         _resolvePosition(
-          transformA: transformA,
-          bodyA: bodyA,
-          transformB: transformB,
-          bodyB: bodyB,
-          penetration: penetration,
+          transformA: entryA.transform,
+          bodyA: entryA.body,
+          transformB: entryB.transform,
+          bodyB: entryB.body,
+          normal: _manifold.normal,
+          penetration: _manifold.penetration,
         );
         _resolveVelocity(
-          bodyA: bodyA,
-          bodyB: bodyB,
-          restitution: math.min(colliderA.restitution, colliderB.restitution),
+          transformA: entryA.transform,
+          bodyA: entryA.body,
+          colliderA: entryA.collider,
+          contactPointA: _manifold.contactPoint,
+          transformB: entryB.transform,
+          bodyB: entryB.body,
+          colliderB: entryB.collider,
+          contactPointB: _manifold.contactPoint,
+          normal: _manifold.normal,
+          restitution: math.min(
+            entryA.collider.restitution,
+            entryB.collider.restitution,
+          ),
           staticFriction: math.sqrt(
-            colliderA.staticFriction * colliderB.staticFriction,
+            entryA.collider.staticFriction * entryB.collider.staticFriction,
           ),
           dynamicFriction: math.sqrt(
-            colliderA.dynamicFriction * colliderB.dynamicFriction,
+            entryA.collider.dynamicFriction * entryB.collider.dynamicFriction,
           ),
         );
       }
     }
   }
 
-  void _resolvePosition({
-    required Transform transformA,
-    required RigidBody? bodyA,
-    required Transform transformB,
-    required RigidBody? bodyB,
-    required double penetration,
-  }) {
-    final invMassA = bodyA?.inverseMass ?? 0.0;
-    final invMassB = bodyB?.inverseMass ?? 0.0;
-    final invMassSum = invMassA + invMassB;
-    if (invMassSum <= 0) {
-      return;
-    }
+  void _collectColliders() {
+    _colliders.clear();
+    for (final entity in world.entities) {
+      final transform = entity.tryGet<Transform>();
+      if (transform == null) {
+        continue;
+      }
 
-    final correctedPenetration = math.max(
-      0.0,
-      penetration - positionCorrectionSlop,
-    );
-    if (correctedPenetration <= 0) {
-      return;
-    }
-
-    final correctionMag =
-        (correctedPenetration * positionCorrectionPercent) / invMassSum;
-    transformA.position.addScaled(_normal, -correctionMag * invMassA);
-    transformB.position.addScaled(_normal, correctionMag * invMassB);
-  }
-
-  void _resolveVelocity({
-    required RigidBody? bodyA,
-    required RigidBody? bodyB,
-    required double restitution,
-    required double staticFriction,
-    required double dynamicFriction,
-  }) {
-    final invMassA = bodyA?.inverseMass ?? 0.0;
-    final invMassB = bodyB?.inverseMass ?? 0.0;
-    final invMassSum = invMassA + invMassB;
-    if (invMassSum <= 0) {
-      return;
-    }
-
-    _relativeVelocity
-      ..setZero()
-      ..add(bodyB?.velocity ?? Vector2.zero())
-      ..sub(bodyA?.velocity ?? Vector2.zero());
-
-    final velAlongNormal = _relativeVelocity.dot(_normal);
-    if (velAlongNormal > 0) {
-      return;
-    }
-
-    final impulseMag = (-(1.0 + restitution) * velAlongNormal) / invMassSum;
-    _impulse
-      ..setFrom(_normal)
-      ..scale(impulseMag);
-
-    if (bodyA != null && invMassA > 0) {
-      bodyA.velocity.addScaled(_impulse, -invMassA);
-    }
-    if (bodyB != null && invMassB > 0) {
-      bodyB.velocity.addScaled(_impulse, invMassB);
-    }
-
-    _applyFriction(
-      bodyA: bodyA,
-      bodyB: bodyB,
-      invMassA: invMassA,
-      invMassB: invMassB,
-      invMassSum: invMassSum,
-      normalImpulseMag: impulseMag,
-      staticFriction: staticFriction,
-      dynamicFriction: dynamicFriction,
-    );
-  }
-
-  void _applyFriction({
-    required RigidBody? bodyA,
-    required RigidBody? bodyB,
-    required double invMassA,
-    required double invMassB,
-    required double invMassSum,
-    required double normalImpulseMag,
-    required double staticFriction,
-    required double dynamicFriction,
-  }) {
-    _relativeVelocity
-      ..setZero()
-      ..add(bodyB?.velocity ?? Vector2.zero())
-      ..sub(bodyA?.velocity ?? Vector2.zero());
-
-    _tangent.setFrom(_relativeVelocity);
-    _normalProjection
-      ..setFrom(_normal)
-      ..scale(_relativeVelocity.dot(_normal));
-    _tangent.sub(_normalProjection);
-
-    final tangentLength2 = _tangent.length2;
-    if (tangentLength2 <= 1e-9) {
-      return;
-    }
-    _tangent.scale(1.0 / math.sqrt(tangentLength2));
-
-    final jt = -_relativeVelocity.dot(_tangent) / invMassSum;
-    if (jt == 0) {
-      return;
-    }
-
-    final frictionImpulseMag = jt.abs() < (normalImpulseMag * staticFriction)
-        ? jt
-        : -normalImpulseMag * dynamicFriction * jt.sign;
-
-    _impulse
-      ..setFrom(_tangent)
-      ..scale(frictionImpulseMag);
-
-    if (bodyA != null && invMassA > 0) {
-      bodyA.velocity.addScaled(_impulse, -invMassA);
-    }
-    if (bodyB != null && invMassB > 0) {
-      bodyB.velocity.addScaled(_impulse, invMassB);
+      final body = entity.tryGet<RigidBody>();
+      for (final component in entity.components) {
+        if (component is! CollisionShape || !component.enabled) {
+          continue;
+        }
+        _colliders.add(
+          _ColliderEntry(
+            entity: entity,
+            transform: transform,
+            body: body,
+            collider: component,
+          ),
+        );
+      }
     }
   }
 
-  double _closingSpeed({required RigidBody? bodyA, required RigidBody? bodyB}) {
-    _relativeVelocity
-      ..setZero()
-      ..add(bodyB?.velocity ?? Vector2.zero())
-      ..sub(bodyA?.velocity ?? Vector2.zero());
-    final alongNormal = _relativeVelocity.dot(_normal);
-    return alongNormal < 0 ? -alongNormal : 0.0;
+  _CollisionEvaluator? _resolveCheck(CollisionShape a, CollisionShape b) {
+    for (final registration in _checks) {
+      if (registration.matches(a, b)) {
+        return registration.evaluate;
+      }
+    }
+    return null;
   }
 }

@@ -5,12 +5,12 @@ import 'package:gamengine/src/render/commands/render_command.dart';
 class DrawCircleCommand extends RenderCommand {
   final Offset center;
   final double radius;
-  final Color color;
+  final Paint? paint;
 
   DrawCircleCommand({
     required this.center,
     required this.radius,
-    required this.color,
+    this.paint,
     super.z = 0,
   });
 

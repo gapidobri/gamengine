@@ -4,6 +4,8 @@ import 'package:gamengine/src/ecs/components/transform.dart';
 import 'package:gamengine/src/ecs/persistence/codecs/component_codec.dart';
 import 'package:gamengine/src/ecs/persistence/serializers/world_state_serializer.dart';
 import 'package:gamengine/src/physics/components/collider.dart';
+import 'package:gamengine/src/physics/components/colliders/circle_collider.dart';
+import 'package:gamengine/src/physics/components/colliders/rectangle_collider.dart';
 import 'package:gamengine/src/physics/components/gravity_source.dart';
 import 'package:gamengine/src/physics/components/rigid_body.dart';
 import 'package:gamengine/src/render/components/animated_sprite.dart';
@@ -15,6 +17,8 @@ class DefaultWorldComponentCodecs {
     serializer.registerCodec<Transform>(_TransformCodec());
     serializer.registerCodec<RigidBody>(_RigidBodyCodec());
     serializer.registerCodec<Collider>(_ColliderCodec());
+    serializer.registerCodec<CircleCollider>(_CircleColliderCodec());
+    serializer.registerCodec<RectangleCollider>(_RectangleColliderCodec());
     serializer.registerCodec<GravitySource>(_GravitySourceCodec());
     serializer.registerCodec<ParticleEmitter>(_ParticleEmitterCodec());
     serializer.registerCodec<AnimatedSprite>(_AnimatedSpriteCodec());
@@ -59,6 +63,14 @@ class _RigidBodyCodec extends ComponentCodec<RigidBody> {
       gravityScale: _readDouble(data, 'gravityScale', fallback: 1),
       useGravity: _readBool(data, 'useGravity', fallback: true),
       isStatic: _readBool(data, 'isStatic', fallback: false),
+      angularAcceleration: _readDouble(
+        data,
+        'angularAcceleration',
+        fallback: 0,
+      ),
+      accumulatedTorque: _readDouble(data, 'accumulatedTorque', fallback: 0),
+      momentOfInertia: _readDouble(data, 'momentOfInertia', fallback: 0),
+      lockRotation: _readBool(data, 'lockRotation', fallback: false),
     );
 
     body.acceleration.setFrom(
@@ -66,9 +78,6 @@ class _RigidBodyCodec extends ComponentCodec<RigidBody> {
     );
     body.accumulatedForce.setFrom(
       _readVector2(data, 'accumulatedForce', fallback: Vector2.zero()),
-    );
-    body.lastAppliedForce.setFrom(
-      _readVector2(data, 'lastAppliedForce', fallback: Vector2.zero()),
     );
 
     return body;
@@ -80,9 +89,12 @@ class _RigidBodyCodec extends ComponentCodec<RigidBody> {
       'velocity': _vector2ToList(component.velocity),
       'acceleration': _vector2ToList(component.acceleration),
       'accumulatedForce': _vector2ToList(component.accumulatedForce),
-      'lastAppliedForce': _vector2ToList(component.lastAppliedForce),
       'mass': component.mass,
       'angularVelocity': component.angularVelocity,
+      'angularAcceleration': component.angularAcceleration,
+      'accumulatedTorque': component.accumulatedTorque,
+      'momentOfInertia': component.momentOfInertia,
+      'lockRotation': component.lockRotation,
       'linearDamping': component.linearDamping,
       'angularDamping': component.angularDamping,
       'gravityScale': component.gravityScale,
@@ -111,6 +123,62 @@ class _ColliderCodec extends ComponentCodec<Collider> {
   Map<String, Object?> encode(Collider component) {
     return <String, Object?>{
       'radius': component.radius,
+      'restitution': component.restitution,
+      'staticFriction': component.staticFriction,
+      'dynamicFriction': component.dynamicFriction,
+      'enabled': component.enabled,
+    };
+  }
+}
+
+class _CircleColliderCodec extends ComponentCodec<CircleCollider> {
+  @override
+  String get typeId => 'physics.circleCollider';
+
+  @override
+  CircleCollider decode(Map<String, Object?> data) {
+    return CircleCollider(
+      radius: _readDouble(data, 'radius', fallback: 1),
+      restitution: _readDouble(data, 'restitution', fallback: 0.4),
+      staticFriction: _readDouble(data, 'staticFriction', fallback: 0.6),
+      dynamicFriction: _readDouble(data, 'dynamicFriction', fallback: 0.45),
+      enabled: _readBool(data, 'enabled', fallback: true),
+    );
+  }
+
+  @override
+  Map<String, Object?> encode(CircleCollider component) {
+    return <String, Object?>{
+      'radius': component.radius,
+      'restitution': component.restitution,
+      'staticFriction': component.staticFriction,
+      'dynamicFriction': component.dynamicFriction,
+      'enabled': component.enabled,
+    };
+  }
+}
+
+class _RectangleColliderCodec extends ComponentCodec<RectangleCollider> {
+  @override
+  String get typeId => 'physics.rectangleCollider';
+
+  @override
+  RectangleCollider decode(Map<String, Object?> data) {
+    return RectangleCollider(
+      halfWidth: _readDouble(data, 'halfWidth', fallback: 1),
+      halfHeight: _readDouble(data, 'halfHeight', fallback: 1),
+      restitution: _readDouble(data, 'restitution', fallback: 0.4),
+      staticFriction: _readDouble(data, 'staticFriction', fallback: 0.6),
+      dynamicFriction: _readDouble(data, 'dynamicFriction', fallback: 0.45),
+      enabled: _readBool(data, 'enabled', fallback: true),
+    );
+  }
+
+  @override
+  Map<String, Object?> encode(RectangleCollider component) {
+    return <String, Object?>{
+      'halfWidth': component.halfWidth,
+      'halfHeight': component.halfHeight,
       'restitution': component.restitution,
       'staticFriction': component.staticFriction,
       'dynamicFriction': component.dynamicFriction,
