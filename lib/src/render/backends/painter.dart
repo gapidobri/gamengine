@@ -5,18 +5,23 @@ import 'package:gamengine/src/render/core/render_queue.dart';
 
 class Painter extends CustomPainter {
   final RenderQueue queue;
+  final Paint _backgroundPaint = Paint();
   final Paint _circlePaint = Paint()..color = Color(0xFFFFFFFF);
-  final Paint _spritePaint = Paint();
+  final Paint _spritePaint = Paint()
+    ..isAntiAlias = false
+    ..filterQuality = FilterQuality.none;
   final List<RSTransform> _atlasTransforms = <RSTransform>[];
   final List<Rect> _atlasSources = <Rect>[];
 
   final CameraState camera;
   final bool useAtlasBatching;
+  final double devicePixelRatio;
 
   Painter({
     required this.queue,
     CameraState? camera,
     this.useAtlasBatching = true,
+    this.devicePixelRatio = 1.0,
   }) : camera = camera ?? CameraState(),
        super(repaint: queue);
 
@@ -25,10 +30,17 @@ class Painter extends CustomPainter {
     camera.viewportWidth = size.width;
     camera.viewportHeight = size.height;
 
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      _backgroundPaint,
+    );
+
     canvas.save();
     canvas.translate(size.width / 2, size.height / 2);
     canvas.scale(camera.zoom);
-    canvas.translate(-camera.position.x, -camera.position.y);
+    final snappedCameraX = _snapToPixelGrid(camera.position.x);
+    final snappedCameraY = _snapToPixelGrid(camera.position.y);
+    canvas.translate(-snappedCameraX, -snappedCameraY);
 
     DrawSpriteCommand? batchSeed;
 
@@ -64,6 +76,18 @@ class Painter extends CustomPainter {
     _flushSpriteBatch(canvas, batchSeed);
 
     canvas.restore();
+  }
+
+  double _snapToPixelGrid(double worldValue) {
+    final zoom = camera.zoom;
+    final dpr = devicePixelRatio <= 0 ? 1.0 : devicePixelRatio;
+    final pixelScale = zoom * dpr;
+
+    if (pixelScale <= 0) {
+      return worldValue;
+    }
+
+    return (worldValue * pixelScale).roundToDouble() / pixelScale;
   }
 
   void _drawSprite(Canvas canvas, DrawSpriteCommand cmd) {

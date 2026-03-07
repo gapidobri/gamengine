@@ -76,18 +76,21 @@ class _GameViewState extends State<GameView>
 
   @override
   Widget build(BuildContext context) {
-    final canvas = Focus(
+    return Focus(
       focusNode: _focusNode,
       autofocus: true,
       onKeyEvent: _handleKeyEvent,
       child: RepaintBoundary(
         child: CustomPaint(
-          painter: Painter(queue: widget.queue, camera: widget.camera),
+          painter: Painter(
+            queue: widget.queue,
+            camera: widget.camera,
+            devicePixelRatio:
+                MediaQuery.maybeDevicePixelRatioOf(context) ?? 1.0,
+          ),
           size: Size.infinite,
         ),
       ),
     );
-
-    return canvas;
   }
 }
