@@ -579,7 +579,7 @@ class _EngineDemoPageState extends State<EngineDemoPage> {
         continue;
       }
 
-      entity.remove(Sprite);
+      entity.remove<Sprite>();
       entity.add(Sprite(image: image, visible: true));
     }
   }
