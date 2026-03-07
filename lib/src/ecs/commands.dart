@@ -32,14 +32,13 @@ class _AddComponentCommand implements _Command {
   void apply(World world) => entity.add(component);
 }
 
-class _RemoveComponentCommand implements _Command {
-  const _RemoveComponentCommand(this.entity, this.component);
+class _RemoveComponentCommand<T extends Component> implements _Command {
+  const _RemoveComponentCommand(this.entity);
 
   final Entity entity;
-  final Component component;
 
   @override
-  void apply(World world) => entity.add(component);
+  void apply(World world) => entity.remove<T>();
 }
 
 class Commands {
@@ -52,8 +51,8 @@ class Commands {
   void addComponent<T extends Component>(Entity entity, T component) =>
       _queue.add(_AddComponentCommand(entity, component));
 
-  void removeComponent<T extends Component>(Entity entity, T component) =>
-      _queue.add(_RemoveComponentCommand(entity, component));
+  void removeComponent<T extends Component>(Entity entity) =>
+      _queue.add(_RemoveComponentCommand<T>(entity));
 
   void flush(World world) {
     for (final cmd in _queue) {

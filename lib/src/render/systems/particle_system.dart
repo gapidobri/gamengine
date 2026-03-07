@@ -1,14 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
-import 'package:gamengine/src/ecs/system.dart';
-import 'package:gamengine/src/ecs/components/transform.dart';
-import 'package:gamengine/src/ecs/persistence/snapshots/snapshot_participant.dart';
-import 'package:gamengine/src/ecs/world.dart';
-import 'package:gamengine/src/render/commands/render_commands.dart';
-import 'package:gamengine/src/render/components/particle_emitter.dart';
-import 'package:gamengine/src/render/core/render_queue.dart';
-import 'package:vector_math/vector_math_64.dart';
+import 'package:gamengine/gamengine.dart';
 
 class ParticleSystem extends System implements SnapshotParticipant {
   final math.Random _rng;

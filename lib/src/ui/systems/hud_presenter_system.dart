@@ -1,6 +1,4 @@
-import 'package:gamengine/src/ecs/system.dart';
-import 'package:gamengine/src/ecs/world.dart';
-import 'package:gamengine/src/ui/hud_state_store.dart';
+import 'package:gamengine/gamengine.dart';
 
 typedef HudProjector<T> = T Function(World world);
 

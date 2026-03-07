@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:gamengine/gamengine.dart';
 import 'package:gamengine/src/ecs/components/transform.dart';
 import 'package:gamengine/src/ecs/entity.dart';
 import 'package:gamengine/src/ecs/events/event_bus.dart';

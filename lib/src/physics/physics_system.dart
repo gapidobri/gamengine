@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:gamengine/gamengine.dart';
 import 'package:gamengine/src/ecs/entity.dart';
 import 'package:gamengine/src/ecs/system.dart';
 import 'package:gamengine/src/ecs/world.dart';

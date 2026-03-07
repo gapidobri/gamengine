@@ -9,8 +9,8 @@ class Entity {
     _components[component.runtimeType] = component;
   }
 
-  void remove(Type componentType) {
-    _components.remove(componentType);
+  void remove<T>() {
+    _components.remove(T);
   }
 
   T get<T extends Component>() {

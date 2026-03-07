@@ -1,12 +1,10 @@
-import 'package:gamengine/src/ecs/entity.dart';
-import 'package:gamengine/src/ecs/events/event_bus.dart';
-import 'package:gamengine/src/ecs/system.dart';
-import 'package:gamengine/src/ecs/world.dart';
+import 'package:gamengine/gamengine.dart';
 
 class Engine {
   final World world;
   final EventBus events;
-  final _systems = <System>[];
+  final Commands _commands = Commands();
+  final List<System> _systems = <System>[];
 
   Engine({World? world, EventBus? events})
     : world = world ?? World(),
@@ -32,8 +30,9 @@ class Engine {
   void update(double dt) {
     events.beginFrame();
     for (final system in _systems) {
-      system.update(dt, world);
+      system.update(dt, world, _commands);
     }
+    _commands.flush(world);
     events.endFrame();
   }
 }

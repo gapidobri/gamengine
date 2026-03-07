@@ -1,9 +1,6 @@
 import 'dart:ui';
 
-import 'package:gamengine/src/ecs/system.dart';
-import 'package:gamengine/src/ecs/world.dart';
-import 'package:gamengine/src/render/components/animated_sprite.dart';
-import 'package:gamengine/src/render/components/sprite.dart';
+import 'package:gamengine/gamengine.dart';
 
 class SpriteAnimationSystem extends System {
   SpriteAnimationSystem();

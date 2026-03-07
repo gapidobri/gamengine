@@ -1,15 +1,6 @@
 import 'dart:ui';
 
-import 'package:gamengine/src/ecs/system.dart';
-import 'package:gamengine/src/ecs/components/transform.dart';
-import 'package:gamengine/src/ecs/world.dart';
-import 'package:gamengine/src/render/camera/camera_state.dart';
-import 'package:gamengine/src/render/commands/render_commands.dart';
-import 'package:gamengine/src/render/components/circle_shape.dart';
-import 'package:gamengine/src/render/components/sprite.dart';
-import 'package:gamengine/src/render/systems/particle_system.dart';
-import 'package:gamengine/src/render/core/render_metrics.dart';
-import 'package:gamengine/src/render/core/render_queue.dart';
+import 'package:gamengine/gamengine.dart';
 
 class RenderSystem extends System {
   final RenderQueue queue;
