@@ -285,7 +285,7 @@ extension _CollisionResolutionExt on CollisionSystem {
       final inertia = (mass * ((width * width) + (height * height))) / 12;
       return inertia > 0 ? 1.0 / inertia : 0;
     }
-    if (collider is Collider) {
+    if (collider is CircleCollider) {
       final inertia = 0.5 * mass * collider.radius * collider.radius;
       return inertia > 0 ? 1.0 / inertia : 0;
     }

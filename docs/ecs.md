@@ -31,7 +31,7 @@ class RegenSystem extends System {
   int get priority => 100;
 
   @override
-  void update(double dt) {
+  void update(double dt, World world, Commands commands) {
     for (final e in world.query2<Transform, Health>()) {
       final hp = world.get<Health>(e);
       hp.value += 1.0 * dt;

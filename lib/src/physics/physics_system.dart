@@ -11,7 +11,6 @@ import 'package:vector_math/vector_math_64.dart';
 class PhysicsSystem extends System {
   static const double universalGravitationalConstant = 6.67430e-11;
 
-  final World world;
   final double gravitationalConstant;
   final Vector2 globalGravity;
   final double maxDeltaTime;
@@ -21,7 +20,6 @@ class PhysicsSystem extends System {
   final Vector2 _tmp = Vector2.zero();
 
   PhysicsSystem({
-    required this.world,
     this.gravitationalConstant = universalGravitationalConstant,
     Vector2? globalGravity,
     this.maxDeltaTime = 1 / 30,
@@ -31,7 +29,7 @@ class PhysicsSystem extends System {
   int get priority => 500;
 
   @override
-  void update(double dt) {
+  void update(double dt, World world, Commands commands) {
     if (dt <= 0) {
       return;
     }
@@ -39,12 +37,12 @@ class PhysicsSystem extends System {
     var remaining = dt;
     while (remaining > 0) {
       final step = remaining > maxDeltaTime ? maxDeltaTime : remaining;
-      _integrateStep(step);
+      _integrateStep(world, step);
       remaining -= step;
     }
   }
 
-  void _integrateStep(double step) {
+  void _integrateStep(World world, double step) {
     final gravitySources = world.query2<Transform, GravitySource>().toList(
       growable: false,
     );

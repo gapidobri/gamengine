@@ -7,6 +7,7 @@ import 'package:gamengine/src/ecs/system.dart';
 import 'package:gamengine/src/ecs/world.dart';
 import 'package:gamengine/src/physics/collision_event.dart';
 import 'package:gamengine/src/physics/components/collider.dart';
+import 'package:gamengine/src/physics/components/colliders/circle_collider.dart';
 import 'package:gamengine/src/physics/components/colliders/rectangle_collider.dart';
 import 'package:gamengine/src/physics/components/rigid_body.dart';
 import 'package:vector_math/vector_math_64.dart';
@@ -16,7 +17,6 @@ part 'collision_system_resolution.dart';
 part 'collision_system_types.dart';
 
 class CollisionSystem extends System {
-  final World world;
   final EventBus? eventBus;
   final double positionCorrectionPercent;
   final double positionCorrectionSlop;
@@ -35,16 +35,15 @@ class CollisionSystem extends System {
   final List<CollisionEvent> _events = <CollisionEvent>[];
 
   CollisionSystem({
-    required this.world,
     this.eventBus,
     this.positionCorrectionPercent = 0.8,
     this.positionCorrectionSlop = 0.01,
   }) {
-    registerCheck<Collider, Collider>(_checkCircleCircle);
+    registerCheck<CircleCollider, CircleCollider>(_checkCircleCircle);
     registerCheck<RectangleCollider, RectangleCollider>(
       _checkRectangleRectangle,
     );
-    registerCheck<RectangleCollider, Collider>(_checkRectangleCircle);
+    registerCheck<RectangleCollider, CircleCollider>(_checkRectangleCircle);
   }
 
   @override
@@ -108,13 +107,13 @@ class CollisionSystem extends System {
   }
 
   @override
-  void update(double dt) {
+  void update(double dt, World world, Commands commands) {
     _events.clear();
     if (dt <= 0) {
       return;
     }
 
-    _collectColliders();
+    _collectColliders(world);
 
     for (var i = 0; i < _colliders.length; i++) {
       final entryA = _colliders[i];
@@ -194,7 +193,7 @@ class CollisionSystem extends System {
     }
   }
 
-  void _collectColliders() {
+  void _collectColliders(World world) {
     _colliders.clear();
     for (final entity in world.entities) {
       final transform = entity.tryGet<Transform>();

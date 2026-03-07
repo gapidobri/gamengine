@@ -12,14 +12,12 @@ import 'package:gamengine/src/render/core/render_metrics.dart';
 import 'package:gamengine/src/render/core/render_queue.dart';
 
 class RenderSystem extends System {
-  final World world;
   final RenderQueue queue;
   final CameraState camera;
   final RenderMetrics metrics;
   final ParticleSystem? particleSystem;
 
   RenderSystem({
-    required this.world,
     required this.queue,
     required this.camera,
     RenderMetrics? metrics,
@@ -30,14 +28,14 @@ class RenderSystem extends System {
   int get priority => 1000;
 
   @override
-  void update(double dt) {
+  void update(double dt, World world, Commands commands) {
     queue.beginFrame();
     metrics.sceneItems = 0;
     metrics.drawnItems = 0;
 
     final cullRect = camera.worldCullRect;
-    _emitSpriteCommands(cullRect);
-    _emitCircleCommands(cullRect);
+    _emitSpriteCommands(world, cullRect);
+    _emitCircleCommands(world, cullRect);
     final particles = particleSystem;
     if (particles != null) {
       metrics.sceneItems += particles.aliveCount;
@@ -50,7 +48,7 @@ class RenderSystem extends System {
     queue.endFrame();
   }
 
-  void _emitSpriteCommands(Rect cullRect) {
+  void _emitSpriteCommands(World world, Rect cullRect) {
     for (final entity in world.query2<Transform, Sprite>()) {
       final transform = entity.get<Transform>();
       final sprite = entity.get<Sprite>();
@@ -80,7 +78,7 @@ class RenderSystem extends System {
     }
   }
 
-  void _emitCircleCommands(Rect cullRect) {
+  void _emitCircleCommands(World world, Rect cullRect) {
     for (final entity in world.query2<Transform, CircleShape>()) {
       final transform = entity.get<Transform>();
       final circle = entity.get<CircleShape>();

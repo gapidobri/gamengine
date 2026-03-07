@@ -6,23 +6,3 @@ abstract class CollisionShape implements Component {
   double get staticFriction;
   double get dynamicFriction;
 }
-
-class Collider extends Component implements CollisionShape {
-  double radius;
-  @override
-  double restitution;
-  @override
-  double staticFriction;
-  @override
-  double dynamicFriction;
-  @override
-  bool enabled;
-
-  Collider({
-    required this.radius,
-    this.restitution = 0.4,
-    this.staticFriction = 0.6,
-    this.dynamicFriction = 0.45,
-    this.enabled = true,
-  });
-}

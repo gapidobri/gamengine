@@ -32,7 +32,7 @@ class Engine {
   void update(double dt) {
     events.beginFrame();
     for (final system in _systems) {
-      system.update(dt);
+      system.update(dt, world);
     }
     events.endFrame();
   }

@@ -18,4 +18,6 @@ class CollisionEvent extends GameEvent {
     required this.relativeSpeed,
     required this.penetration,
   });
+
+  bool includes(Entity entity) => entity == entityA || entity == entityB;
 }

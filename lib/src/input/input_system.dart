@@ -17,7 +17,7 @@ class InputSystem<T> extends System {
   int get priority => 100;
 
   @override
-  void update(double dt) {
+  void update(double dt, World world, Commands commands) {
     actionState.beginFrame();
 
     final rawEvents = eventBus.read<RawInputEvent>().toList(growable: false);

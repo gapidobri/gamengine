@@ -6,15 +6,16 @@ import 'package:gamengine/src/render/components/animated_sprite.dart';
 import 'package:gamengine/src/render/components/sprite.dart';
 
 class SpriteAnimationSystem extends System {
-  final World world;
+  SpriteAnimationSystem();
 
-  SpriteAnimationSystem({required this.world});
+  late World _world;
 
   @override
   int get priority => 950;
 
   @override
-  void update(double dt) {
+  void update(double dt, World world, Commands commands) {
+    _world = world;
     _syncInternal(dt: dt, advanceTime: true);
   }
 
@@ -25,7 +26,7 @@ class SpriteAnimationSystem extends System {
   }
 
   void _syncInternal({required double dt, required bool advanceTime}) {
-    for (final entity in world.query2<Sprite, AnimatedSprite>()) {
+    for (final entity in _world.query2<Sprite, AnimatedSprite>()) {
       final sprite = entity.get<Sprite>();
       final animation = entity.get<AnimatedSprite>();
       final image = sprite.image;

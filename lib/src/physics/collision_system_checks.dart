@@ -3,9 +3,9 @@ part of 'collision_system.dart';
 extension _CollisionCheckExt on CollisionSystem {
   bool _checkCircleCircle({
     required Transform transformA,
-    required Collider colliderA,
+    required CircleCollider colliderA,
     required Transform transformB,
-    required Collider colliderB,
+    required CircleCollider colliderB,
     required CollisionManifold manifold,
   }) {
     if (colliderA.radius <= 0 || colliderB.radius <= 0) {
@@ -125,7 +125,7 @@ extension _CollisionCheckExt on CollisionSystem {
     required Transform transformA,
     required RectangleCollider colliderA,
     required Transform transformB,
-    required Collider colliderB,
+    required CircleCollider colliderB,
     required CollisionManifold manifold,
   }) {
     if (colliderA.halfWidth <= 0 ||

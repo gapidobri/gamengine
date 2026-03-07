@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:gamengine/src/ecs/components/transform.dart';
 import 'package:gamengine/src/ecs/persistence/codecs/component_codec.dart';
 import 'package:gamengine/src/ecs/persistence/serializers/world_state_serializer.dart';
-import 'package:gamengine/src/physics/components/collider.dart';
 import 'package:gamengine/src/physics/components/colliders/circle_collider.dart';
 import 'package:gamengine/src/physics/components/colliders/rectangle_collider.dart';
 import 'package:gamengine/src/physics/components/gravity_source.dart';
@@ -16,7 +15,6 @@ class DefaultWorldComponentCodecs {
   static void register(WorldStateSerializer serializer) {
     serializer.registerCodec<Transform>(_TransformCodec());
     serializer.registerCodec<RigidBody>(_RigidBodyCodec());
-    serializer.registerCodec<Collider>(_ColliderCodec());
     serializer.registerCodec<CircleCollider>(_CircleColliderCodec());
     serializer.registerCodec<RectangleCollider>(_RectangleColliderCodec());
     serializer.registerCodec<GravitySource>(_GravitySourceCodec());
@@ -100,33 +98,6 @@ class _RigidBodyCodec extends ComponentCodec<RigidBody> {
       'gravityScale': component.gravityScale,
       'useGravity': component.useGravity,
       'isStatic': component.isStatic,
-    };
-  }
-}
-
-class _ColliderCodec extends ComponentCodec<Collider> {
-  @override
-  String get typeId => 'physics.collider';
-
-  @override
-  Collider decode(Map<String, Object?> data) {
-    return Collider(
-      radius: _readDouble(data, 'radius', fallback: 1),
-      restitution: _readDouble(data, 'restitution', fallback: 0.4),
-      staticFriction: _readDouble(data, 'staticFriction', fallback: 0.6),
-      dynamicFriction: _readDouble(data, 'dynamicFriction', fallback: 0.45),
-      enabled: _readBool(data, 'enabled', fallback: true),
-    );
-  }
-
-  @override
-  Map<String, Object?> encode(Collider component) {
-    return <String, Object?>{
-      'radius': component.radius,
-      'restitution': component.restitution,
-      'staticFriction': component.staticFriction,
-      'dynamicFriction': component.dynamicFriction,
-      'enabled': component.enabled,
     };
   }
 }

@@ -8,7 +8,7 @@ import 'package:gamengine/physics.dart';
 
 ## What It Contains
 
-- Components: `RigidBody`, `Collider`, `GravitySource`
+- Components: `RigidBody`, `CircleCollider`, `RectangleCollider`, `GravitySource`
 - Systems: `PhysicsSystem`, `CollisionSystem`
 - Debug: `PhysicsDebugSystem`, `PhysicsVectorsOverlay`
 - Event: `CollisionEvent`
@@ -29,12 +29,12 @@ engine.addSystem(collisions, 490);
 final ship = Entity()
   ..add(Transform())
   ..add(RigidBody(mass: 1.2))
-  ..add(Collider(radius: 14));
+  ..add(CircleCollider(radius: 14));
 
 final planet = Entity()
   ..add(Transform())
   ..add(GravitySource(mass: 420000, minDistance: 60))
-  ..add(Collider(radius: 90));
+  ..add(CircleCollider(radius: 90));
 ```
 
 ## Collision Consumption

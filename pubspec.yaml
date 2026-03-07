@@ -8,7 +8,6 @@ environment:
   flutter: ">=1.17.0"
 
 dependencies:
-  collection: ^1.19.1
   flutter:
     sdk: flutter
   just_audio: ^0.10.5

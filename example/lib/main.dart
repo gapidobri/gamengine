@@ -171,21 +171,16 @@ class _EngineDemoPageState extends State<EngineDemoPage> {
     );
 
     final physicsSystem = PhysicsSystem(
-      world: _world,
       gravitationalConstant: _gravityConstant,
     );
-    final collisionSystem = CollisionSystem(
-      world: _world,
-      eventBus: _engine.events,
-    );
-    _particleSystem = ParticleSystem(world: _world, maxParticles: 6000);
+    final collisionSystem = CollisionSystem(eventBus: _engine.events);
+    _particleSystem = ParticleSystem(maxParticles: 6000);
 
-    _engine.addSystem(RocketControlSystem(world: _world, input: _flightInput));
-    _spriteAnimationSystem = SpriteAnimationSystem(world: _world);
+    _engine.addSystem(RocketControlSystem(input: _flightInput));
+    _spriteAnimationSystem = SpriteAnimationSystem();
     _engine.addSystem(_spriteAnimationSystem);
     _engine.addSystem(
       HudPresenterSystem<FlightHudState>(
-        world: _world,
         output: _hudStore,
         project: _buildFlightHudState,
       ),
@@ -206,7 +201,6 @@ class _EngineDemoPageState extends State<EngineDemoPage> {
     _engine.addSystem(_particleSystem);
     _engine.addSystem(
       RenderSystem(
-        world: _world,
         queue: _queue,
         camera: _camera,
         metrics: _renderMetrics,
@@ -232,7 +226,7 @@ class _EngineDemoPageState extends State<EngineDemoPage> {
     entity.add(transform);
     entity.add(GravitySource(mass: mass, minDistance: radius * 0.65));
     entity.add(
-      Collider(
+      CircleCollider(
         radius: radius,
         restitution: 0.1,
         staticFriction: 0.9,
@@ -278,7 +272,7 @@ class _EngineDemoPageState extends State<EngineDemoPage> {
     entity.add(transform);
     entity.add(body);
     entity.add(
-      Collider(
+      CircleCollider(
         radius: 14,
         restitution: 0.28,
         staticFriction: 0.62,
@@ -366,7 +360,7 @@ class _EngineDemoPageState extends State<EngineDemoPage> {
       entity.add(transform);
       entity.add(body);
       entity.add(
-        Collider(
+        CircleCollider(
           radius: 10 * scale,
           restitution: 0.12,
           staticFriction: 0.78,
@@ -642,7 +636,7 @@ class _EngineDemoPageState extends State<EngineDemoPage> {
   double _estimateSurfaceAltitude(double x, double y) {
     double? best;
     for (final entity in _world.entities) {
-      final collider = entity.tryGet<Collider>();
+      final collider = entity.tryGet<CircleCollider>();
       final transform = entity.tryGet<Transform>();
       if (entity.has<GravitySource>() ||
           collider == null ||
@@ -874,16 +868,15 @@ double _readDouble(Map<String, Object?> data, String key, double fallback) {
 }
 
 class RocketControlSystem extends System {
-  final World world;
   final FlightInputState input;
 
-  RocketControlSystem({required this.world, required this.input});
+  RocketControlSystem({required this.input});
 
   @override
   int get priority => 700;
 
   @override
-  void update(double dt) {
+  void update(double dt, World world, Commands commands) {
     for (final entity in world.query2<Transform, RocketPilot>()) {
       final transform = entity.get<Transform>();
       final body = entity.get<RigidBody>();
@@ -938,7 +931,7 @@ class CollisionParticleEffectsSystem extends System {
   int get priority => 485;
 
   @override
-  void update(double dt) {
+  void update(double dt, World world, Commands commands) {
     for (final event in eventBus.read<CollisionEvent>()) {
       final isPlanetHit =
           event.entityA.has<GravitySource>() ||

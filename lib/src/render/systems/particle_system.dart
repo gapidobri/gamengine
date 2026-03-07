@@ -11,7 +11,6 @@ import 'package:gamengine/src/render/core/render_queue.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 class ParticleSystem extends System implements SnapshotParticipant {
-  final World world;
   final math.Random _rng;
   final int maxParticles;
   final Vector2 globalAcceleration;
@@ -20,7 +19,6 @@ class ParticleSystem extends System implements SnapshotParticipant {
   final Vector2 _tmp = Vector2.zero();
 
   ParticleSystem({
-    required this.world,
     int? randomSeed,
     this.maxParticles = 4000,
     Vector2? globalAcceleration,
@@ -40,12 +38,12 @@ class ParticleSystem extends System implements SnapshotParticipant {
   }
 
   @override
-  void update(double dt) {
+  void update(double dt, World world, Commands commands) {
     if (dt <= 0) {
       return;
     }
 
-    _emitFromComponents(dt);
+    _emitFromComponents(world, dt);
     _integrateParticles(dt);
   }
 
@@ -84,7 +82,7 @@ class ParticleSystem extends System implements SnapshotParticipant {
     return written;
   }
 
-  void _emitFromComponents(double dt) {
+  void _emitFromComponents(World world, double dt) {
     for (final entity in world.query2<Transform, ParticleEmitter>()) {
       final transform = entity.get<Transform>();
       final emitter = entity.get<ParticleEmitter>();

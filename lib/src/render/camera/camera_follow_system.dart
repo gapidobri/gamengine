@@ -1,9 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:gamengine/src/ecs/entity.dart';
-import 'package:gamengine/src/ecs/system.dart';
-import 'package:gamengine/src/ecs/components/transform.dart';
-import 'package:gamengine/src/render/camera/camera_state.dart';
+import 'package:gamengine/gamengine.dart';
 
 class CameraFollowSystem extends System {
   final CameraState camera;
@@ -24,7 +21,7 @@ class CameraFollowSystem extends System {
   int get priority => 650;
 
   @override
-  void update(double dt) {
+  void update(double dt, World world, Commands commands) {
     final targetTransform = target.get<Transform>();
 
     final t = dt <= 0 ? 1.0 : (1.0 - math.exp(-smoothing * dt));
