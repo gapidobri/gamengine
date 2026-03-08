@@ -67,6 +67,11 @@ class Painter extends CustomPainter {
           batchSeed = null;
           _drawCircle(canvas, command);
           break;
+        case DrawTiledSpriteCommand():
+          _flushSpriteBatch(canvas, batchSeed);
+          batchSeed = null;
+          _drawTiledSprite(canvas, command);
+          break;
         default:
           _flushSpriteBatch(canvas, batchSeed);
           batchSeed = null;
@@ -167,6 +172,46 @@ class Painter extends CustomPainter {
 
   void _drawCircle(Canvas canvas, DrawCircleCommand cmd) {
     canvas.drawCircle(cmd.center, cmd.radius, cmd.paint ?? _circlePaint);
+  }
+
+  void _drawTiledSprite(Canvas canvas, DrawTiledSpriteCommand cmd) {
+    final areaW = cmd.areaSize.width * cmd.scaleX.abs();
+    final areaH = cmd.areaSize.height * cmd.scaleY.abs();
+    final tileW = cmd.tileSize.width * cmd.scaleX.abs();
+    final tileH = cmd.tileSize.height * cmd.scaleY.abs();
+
+    if (areaW <= 0 || areaH <= 0 || tileW <= 0 || tileH <= 0) {
+      return;
+    }
+
+    final ax = cmd.anchor.dx * areaW;
+    final ay = cmd.anchor.dy * areaH;
+    final dstRect = Rect.fromLTWH(-ax, -ay, areaW, areaH);
+    final srcRect = Rect.fromLTWH(
+      0,
+      0,
+      cmd.image.width.toDouble(),
+      cmd.image.height.toDouble(),
+    );
+
+    canvas.save();
+    canvas.translate(cmd.position.dx, cmd.position.dy);
+    canvas.rotate(cmd.rotation);
+    canvas.clipRect(dstRect);
+
+    final paint = cmd.paint ?? _spritePaint;
+    for (double x = dstRect.left; x < dstRect.right; x += tileW) {
+      for (double y = dstRect.top; y < dstRect.bottom; y += tileH) {
+        canvas.drawImageRect(
+          cmd.image,
+          srcRect,
+          Rect.fromLTWH(x, y, tileW, tileH),
+          paint,
+        );
+      }
+    }
+
+    canvas.restore();
   }
 
   @override

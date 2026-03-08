@@ -3,9 +3,23 @@ import 'dart:ui';
 
 import 'package:gamengine/src/render/commands/render_command.dart';
 
-class DrawSpriteCommand extends RenderCommand {
+class DrawTiledSpriteCommand extends RenderCommand {
+  const DrawTiledSpriteCommand({
+    super.z,
+    required this.image,
+    required this.tileSize,
+    required this.areaSize,
+    required this.position,
+    this.rotation = 0,
+    this.scaleX = 0,
+    this.scaleY = 0,
+    this.anchor = const Offset(0.5, 0.5),
+    this.paint,
+  });
+
   final Image image;
-  final Rect? src;
+  final Size tileSize;
+  final Size areaSize;
   final Offset position;
   final double rotation;
   final double scaleX;
@@ -13,26 +27,10 @@ class DrawSpriteCommand extends RenderCommand {
   final Offset anchor;
   final Paint? paint;
 
-  const DrawSpriteCommand({
-    required this.image,
-    required this.position,
-    this.src,
-    this.rotation = 0,
-    this.scaleX = 0,
-    this.scaleY = 0,
-    this.anchor = const Offset(0.5, 0.5),
-    this.paint,
-    super.z = 0,
-  });
-
   @override
   Rect get worldBounds {
-    final source =
-        src ??
-        Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
-
-    final width = source.width * scaleX.abs();
-    final height = source.height * scaleY.abs();
+    final width = areaSize.width * scaleX.abs();
+    final height = areaSize.height * scaleY.abs();
 
     if (width == 0 || height == 0) {
       return Rect.fromLTWH(position.dx, position.dy, 0, 0);

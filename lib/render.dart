@@ -4,6 +4,7 @@ export 'src/render/camera/camera_state.dart';
 export 'src/render/commands/render_commands.dart';
 export 'src/render/components/animated_sprite.dart';
 export 'src/render/components/sprite.dart';
+export 'src/render/components/tiled_sprite.dart';
 export 'src/render/components/circle_shape.dart';
 export 'src/render/components/particle_emitter.dart';
 export 'src/render/core/render_metrics.dart';

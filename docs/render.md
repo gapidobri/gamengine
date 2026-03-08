@@ -8,7 +8,7 @@ import 'package:gamengine/render.dart';
 
 ## What It Contains
 
-- Components: `Sprite`, `AnimatedSprite`, `ParticleEmitter`
+- Components: `Sprite`, `TiledSprite`, `AnimatedSprite`, `ParticleEmitter`
 - Systems: `RenderSystem`, `SpriteAnimationSystem`, `ParticleSystem`, `DebugSystem`
 - Runtime: `RenderQueue`, `RenderMetrics`, `CameraState`, `CameraFollowSystem`
 - Flutter bridge: `GameView` + `Painter`

@@ -26,6 +26,7 @@ class RenderSystem extends System {
 
     final cullRect = camera.worldCullRect;
     _emitSpriteCommands(world, cullRect);
+    _emitTiledSpriteCommands(world, cullRect);
     _emitCircleCommands(world, cullRect);
     final particles = particleSystem;
     if (particles != null) {
@@ -82,6 +83,35 @@ class RenderSystem extends System {
           radius: circle.radius,
           paint: circle.paint,
           z: circle.z,
+        ),
+        cullRect,
+      );
+    }
+  }
+
+  void _emitTiledSpriteCommands(World world, Rect cullRect) {
+    for (final entity in world.query2<Transform, TiledSprite>()) {
+      final transform = entity.get<Transform>();
+      final sprite = entity.get<TiledSprite>();
+
+      metrics.sceneItems++;
+
+      if (!sprite.visible) {
+        continue;
+      }
+
+      _addIfVisible(
+        DrawTiledSpriteCommand(
+          image: sprite.image,
+          tileSize: sprite.tileSize,
+          areaSize: sprite.areaSize,
+          position: Offset(transform.position.x, transform.position.y),
+          rotation: transform.rotation,
+          scaleX: transform.scale.x,
+          scaleY: transform.scale.y,
+          anchor: sprite.anchor,
+          paint: sprite.paint,
+          z: sprite.z,
         ),
         cullRect,
       );

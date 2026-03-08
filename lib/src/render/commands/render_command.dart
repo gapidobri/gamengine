@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 abstract class RenderCommand {
-  RenderCommand({this.z = 0});
+  const RenderCommand({this.z = 0});
 
   final int z;
 
