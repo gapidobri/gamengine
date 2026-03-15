@@ -1,13 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:gamengine/gamengine.dart';
-import 'package:gamengine/src/ecs/entity.dart';
-import 'package:gamengine/src/ecs/system.dart';
-import 'package:gamengine/src/ecs/world.dart';
-import 'package:gamengine/src/physics/components/gravity_source.dart';
-import 'package:gamengine/src/physics/components/rigid_body.dart';
-import 'package:gamengine/src/ecs/components/transform.dart';
-import 'package:vector_math/vector_math_64.dart';
 
 class PhysicsSystem extends System {
   static const double universalGravitationalConstant = 6.67430e-11;

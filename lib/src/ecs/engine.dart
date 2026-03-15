@@ -10,6 +10,8 @@ class Engine {
     : world = world ?? World(),
       events = events ?? EventBus();
 
+  List<System> get systems => _systems;
+
   void addEntity(Entity entity) {
     world.addEntity(entity);
   }

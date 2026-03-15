@@ -1,17 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:gamengine/gamengine.dart';
-import 'package:gamengine/src/ecs/components/transform.dart';
-import 'package:gamengine/src/ecs/entity.dart';
-import 'package:gamengine/src/ecs/events/event_bus.dart';
-import 'package:gamengine/src/ecs/system.dart';
-import 'package:gamengine/src/ecs/world.dart';
-import 'package:gamengine/src/physics/collision_event.dart';
-import 'package:gamengine/src/physics/components/collider.dart';
-import 'package:gamengine/src/physics/components/colliders/circle_collider.dart';
-import 'package:gamengine/src/physics/components/colliders/rectangle_collider.dart';
-import 'package:gamengine/src/physics/components/rigid_body.dart';
-import 'package:vector_math/vector_math_64.dart';
 
 part 'collision_system_checks.dart';
 part 'collision_system_resolution.dart';

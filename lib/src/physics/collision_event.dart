@@ -20,4 +20,6 @@ class CollisionEvent extends GameEvent {
   });
 
   bool includes(Entity entity) => entity == entityA || entity == entityB;
+
+  List<Entity> get entities => [entityA, entityB];
 }

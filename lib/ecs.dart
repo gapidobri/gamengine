@@ -8,3 +8,4 @@ export 'src/ecs/system.dart';
 export 'src/ecs/components/transform.dart';
 export 'src/ecs/world.dart';
 export 'src/ecs/commands.dart';
+export 'src/ecs/systems/systems.dart';
