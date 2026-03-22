@@ -2,13 +2,13 @@ import 'package:gamengine/gamengine.dart';
 
 class Engine {
   final World world;
-  final EventBus events;
+  final EventBus eventBus;
   final Commands _commands = Commands();
   final List<System> _systems = <System>[];
 
-  Engine({World? world, EventBus? events})
+  Engine({World? world, EventBus? eventBus})
     : world = world ?? World(),
-      events = events ?? EventBus();
+      eventBus = eventBus ?? EventBus();
 
   List<System> get systems => _systems;
 
@@ -30,11 +30,11 @@ class Engine {
   }
 
   void update(double dt) {
-    events.beginFrame();
+    eventBus.beginFrame();
     for (final system in _systems) {
       system.update(dt, world, _commands);
     }
     _commands.flush(world);
-    events.endFrame();
+    eventBus.endFrame();
   }
 }

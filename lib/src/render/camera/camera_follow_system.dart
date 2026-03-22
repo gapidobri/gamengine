@@ -4,14 +4,13 @@ import 'package:gamengine/gamengine.dart';
 
 class CameraFollowSystem extends System {
   final CameraState camera;
-  final Entity target;
+
   final double smoothing;
   final double offsetX;
   final double offsetY;
 
   CameraFollowSystem({
     required this.camera,
-    required this.target,
     this.smoothing = 8.0,
     this.offsetX = 0,
     this.offsetY = 0,
@@ -22,6 +21,9 @@ class CameraFollowSystem extends System {
 
   @override
   void update(double dt, World world, Commands commands) {
+    final target = world.query2<Transform, CameraFollowTarget>().firstOrNull;
+    if (target == null) return;
+
     final targetTransform = target.get<Transform>();
 
     final t = dt <= 0 ? 1.0 : (1.0 - math.exp(-smoothing * dt));

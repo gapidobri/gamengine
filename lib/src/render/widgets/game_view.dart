@@ -70,7 +70,7 @@ class _GameViewState extends State<GameView>
   }
 
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
-    widget.engine.events.emit(RawInputEvent(keyEvent: event));
+    widget.engine.eventBus.emit(RawInputEvent(keyEvent: event));
     return .handled;
   }
 

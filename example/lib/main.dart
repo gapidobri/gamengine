@@ -173,7 +173,7 @@ class _EngineDemoPageState extends State<EngineDemoPage> {
     final physicsSystem = PhysicsSystem(
       gravitationalConstant: _gravityConstant,
     );
-    final collisionSystem = CollisionSystem(eventBus: _engine.events);
+    final collisionSystem = CollisionSystem(eventBus: _engine.eventBus);
     _particleSystem = ParticleSystem(maxParticles: 6000);
 
     _engine.addSystem(RocketControlSystem(input: _flightInput));
@@ -185,16 +185,13 @@ class _EngineDemoPageState extends State<EngineDemoPage> {
         project: _buildFlightHudState,
       ),
     );
-    _cameraFollowSystem = CameraFollowSystem(
-      camera: _camera,
-      target: _rocketEntity,
-    );
+    _cameraFollowSystem = CameraFollowSystem(camera: _camera);
     _engine.addSystem(_cameraFollowSystem!);
     _engine.addSystem(physicsSystem);
     _engine.addSystem(collisionSystem);
     _engine.addSystem(
       CollisionParticleEffectsSystem(
-        eventBus: _engine.events,
+        eventBus: _engine.eventBus,
         particleSystem: _particleSystem,
       ),
     );
@@ -603,7 +600,7 @@ class _EngineDemoPageState extends State<EngineDemoPage> {
     if (oldFollow != null) {
       _engine.removeSystem(oldFollow);
     }
-    _cameraFollowSystem = CameraFollowSystem(camera: _camera, target: rocket);
+    _cameraFollowSystem = CameraFollowSystem(camera: _camera);
     _engine.addSystem(_cameraFollowSystem!);
   }
 
@@ -657,7 +654,7 @@ class _EngineDemoPageState extends State<EngineDemoPage> {
 
   int _collisionEventsLastFrame() {
     var count = 0;
-    for (final _ in _engine.events.read<CollisionEvent>()) {
+    for (final _ in _engine.eventBus.read<CollisionEvent>()) {
       count++;
     }
     return count;

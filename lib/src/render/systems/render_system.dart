@@ -7,22 +7,40 @@ class RenderSystem extends System {
   final CameraState camera;
   final RenderMetrics metrics;
   final ParticleSystem? particleSystem;
+  final List<RenderPass> _passes;
 
   RenderSystem({
     required this.queue,
     required this.camera,
+    List<RenderPass>? passes,
     RenderMetrics? metrics,
     this.particleSystem,
-  }) : metrics = metrics ?? RenderMetrics();
+  }) : metrics = metrics ?? RenderMetrics(),
+       _passes = [...?passes] {
+    _sortPasses();
+  }
 
   @override
   int get priority => 1000;
+
+  List<RenderPass> get passes => List.unmodifiable(_passes);
+
+  void addPass(RenderPass pass) {
+    _passes.add(pass);
+    _sortPasses();
+  }
+
+  bool removePass(RenderPass pass) {
+    return _passes.remove(pass);
+  }
 
   @override
   void update(double dt, World world, Commands commands) {
     queue.beginFrame();
     metrics.sceneItems = 0;
     metrics.drawnItems = 0;
+
+    _writePasses(world, RenderPassStage.beforeWorld);
 
     final cullRect = camera.worldCullRect;
     _emitSpriteCommands(world, cullRect);
@@ -37,7 +55,28 @@ class RenderSystem extends System {
       );
     }
 
+    _writePasses(world, RenderPassStage.afterWorld);
+
     queue.endFrame();
+  }
+
+  void _writePasses(World world, RenderPassStage stage) {
+    for (final pass in _passes) {
+      if (pass.stage != stage) {
+        continue;
+      }
+      pass.write(world, camera: camera, queue: queue);
+    }
+  }
+
+  void _sortPasses() {
+    _passes.sort((a, b) {
+      final byStage = a.stage.index.compareTo(b.stage.index);
+      if (byStage != 0) {
+        return byStage;
+      }
+      return a.priority.compareTo(b.priority);
+    });
   }
 
   void _emitSpriteCommands(World world, Rect cullRect) {
