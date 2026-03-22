@@ -6,9 +6,9 @@ import 'package:vector_math/vector_math_64.dart';
 class Transform extends Component {
   static const double _twoPi = math.pi * 2.0;
 
-  Vector2 position = Vector2.zero();
+  final Vector2 position;
   double _rotation;
-  Vector2 scale = Vector2.all(1);
+  final Vector2 scale;
 
   double get rotation => _rotation;
 
