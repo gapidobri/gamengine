@@ -34,4 +34,14 @@ class World {
       }
     }
   }
+
+  T? tryGetComponent<T extends Component>() {
+    for (final entity in _entities) {
+      final component = entity.tryGet<T>();
+      if (component != null) {
+        return component;
+      }
+    }
+    return null;
+  }
 }
