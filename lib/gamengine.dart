@@ -5,5 +5,6 @@ export 'render.dart';
 export 'sound.dart';
 export 'ui.dart';
 export 'input.dart';
+export 'src/extensions/extensions.dart';
 
 export 'package:vector_math/vector_math_64.dart' show Vector2;

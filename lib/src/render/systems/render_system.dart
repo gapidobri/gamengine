@@ -1,6 +1,9 @@
 import 'dart:ui';
 
 import 'package:gamengine/gamengine.dart';
+import 'package:gamengine/src/extensions/vector2.dart';
+import 'package:gamengine/src/render/commands/draw_rectangle_command.dart';
+import 'package:gamengine/src/render/components/rectangle_shape.dart';
 
 class RenderSystem extends System {
   final RenderQueue queue;
@@ -46,6 +49,7 @@ class RenderSystem extends System {
     _emitSpriteCommands(world, cullRect);
     _emitTiledSpriteCommands(world, cullRect);
     _emitCircleCommands(world, cullRect);
+    _emitRectangleCommands(world, cullRect);
     final particles = particleSystem;
     if (particles != null) {
       metrics.sceneItems += particles.aliveCount;
@@ -122,6 +126,25 @@ class RenderSystem extends System {
           radius: circle.radius,
           paint: circle.paint,
           z: circle.z,
+        ),
+        cullRect,
+      );
+    }
+  }
+
+  void _emitRectangleCommands(World world, Rect cullRect) {
+    for (final entity in world.query2<Transform, RectangleShape>()) {
+      final transform = entity.get<Transform>();
+      final rectangle = entity.get<RectangleShape>();
+
+      metrics.sceneItems++;
+
+      _addIfVisible(
+        DrawRectangleCommand(
+          rect: transform.position.toOffset() & rectangle.size,
+          anchor: rectangle.anchor,
+          paint: rectangle.paint,
+          z: rectangle.z,
         ),
         cullRect,
       );

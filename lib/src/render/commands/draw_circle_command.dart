@@ -15,7 +15,5 @@ class DrawCircleCommand extends RenderCommand {
   });
 
   @override
-  Rect get worldBounds {
-    return Rect.fromCircle(center: center, radius: radius.abs());
-  }
+  Rect get worldBounds => Rect.fromCircle(center: center, radius: radius.abs());
 }

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:gamengine/src/render/camera/camera_state.dart';
+import 'package:gamengine/src/render/commands/draw_rectangle_command.dart';
 import 'package:gamengine/src/render/commands/render_commands.dart';
 import 'package:gamengine/src/render/core/render_queue.dart';
 
 class Painter extends CustomPainter {
   final RenderQueue queue;
   final Paint _backgroundPaint = Paint();
-  final Paint _circlePaint = Paint()..color = Color(0xFFFFFFFF);
+  final Paint _defaultPaint = Paint()..color = Color(0xFFFFFFFF);
   final Paint _spritePaint = Paint()
     ..isAntiAlias = false
     ..filterQuality = FilterQuality.none;
@@ -38,9 +39,7 @@ class Painter extends CustomPainter {
     canvas.save();
     canvas.translate(size.width / 2, size.height / 2);
     canvas.scale(camera.zoom);
-    final snappedCameraX = _snapToPixelGrid(camera.position.x);
-    final snappedCameraY = _snapToPixelGrid(camera.position.y);
-    canvas.translate(-snappedCameraX, -snappedCameraY);
+    canvas.translate(-camera.position.x, -camera.position.y);
 
     DrawSpriteCommand? batchSeed;
 
@@ -67,6 +66,11 @@ class Painter extends CustomPainter {
           batchSeed = null;
           _drawCircle(canvas, command);
           break;
+        case DrawRectangleCommand():
+          _flushSpriteBatch(canvas, batchSeed);
+          batchSeed = null;
+          _drawRectangle(canvas, command);
+          break;
         case DrawTiledSpriteCommand():
           _flushSpriteBatch(canvas, batchSeed);
           batchSeed = null;
@@ -81,18 +85,6 @@ class Painter extends CustomPainter {
     _flushSpriteBatch(canvas, batchSeed);
 
     canvas.restore();
-  }
-
-  double _snapToPixelGrid(double worldValue) {
-    final zoom = camera.zoom;
-    final dpr = devicePixelRatio <= 0 ? 1.0 : devicePixelRatio;
-    final pixelScale = zoom * dpr;
-
-    if (pixelScale <= 0) {
-      return worldValue;
-    }
-
-    return (worldValue * pixelScale).roundToDouble() / pixelScale;
   }
 
   void _drawSprite(Canvas canvas, DrawSpriteCommand cmd) {
@@ -171,7 +163,20 @@ class Painter extends CustomPainter {
   }
 
   void _drawCircle(Canvas canvas, DrawCircleCommand cmd) {
-    canvas.drawCircle(cmd.center, cmd.radius, cmd.paint ?? _circlePaint);
+    canvas.drawCircle(cmd.center, cmd.radius, cmd.paint ?? _defaultPaint);
+  }
+
+  void _drawRectangle(Canvas canvas, DrawRectangleCommand cmd) {
+    final ax = cmd.anchor.dx * cmd.rect.width;
+    final ay = cmd.anchor.dy * cmd.rect.height;
+
+    canvas.save();
+    canvas.translate(cmd.rect.left - ax, cmd.rect.top - ay);
+    canvas.rotate(cmd.rotation);
+
+    canvas.drawRect(cmd.rect, cmd.paint ?? _defaultPaint);
+
+    canvas.restore();
   }
 
   void _drawTiledSprite(Canvas canvas, DrawTiledSpriteCommand cmd) {
@@ -216,6 +221,7 @@ class Painter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant Painter oldDelegate) {
-    return oldDelegate.camera != camera;
+    return oldDelegate.camera != camera ||
+        oldDelegate.devicePixelRatio != devicePixelRatio;
   }
 }
