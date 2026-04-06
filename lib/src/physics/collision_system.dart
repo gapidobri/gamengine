@@ -150,6 +150,10 @@ class CollisionSystem extends System {
         _events.add(event);
         eventBus?.emit(event);
 
+        if (entryA.body == null || entryB.body == null) {
+          continue;
+        }
+
         _resolvePosition(
           transformA: entryA.transform,
           bodyA: entryA.body,

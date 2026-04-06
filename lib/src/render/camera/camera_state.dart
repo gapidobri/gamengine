@@ -4,7 +4,7 @@ import 'package:vector_math/vector_math_64.dart';
 
 class CameraState {
   final Vector2 position = Vector2.zero();
-  double zoom = 1.0;
+  double zoom = 1;
   double cullingPadding = 128.0;
 
   double viewportWidth = 0;
