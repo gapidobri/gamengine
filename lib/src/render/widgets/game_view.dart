@@ -10,14 +10,16 @@ class GameView extends StatefulWidget {
   final Engine engine;
   final RenderQueue queue;
   final CameraState camera;
-  final bool autoStart;
+  final bool paused;
+  final void Function(KeyEvent event)? onKeyEvent;
 
   const GameView({
     super.key,
     required this.engine,
     required this.queue,
     required this.camera,
-    this.autoStart = true,
+    this.paused = false,
+    this.onKeyEvent,
   });
 
   @override
@@ -35,8 +37,18 @@ class _GameViewState extends State<GameView>
   void initState() {
     super.initState();
     _ticker = createTicker(_onTick);
-    if (widget.autoStart) {
+    _syncTicker();
+  }
+
+  void _syncTicker() {
+    if (!widget.paused && !_ticker.isActive) {
       _ticker.start();
+      return;
+    }
+
+    if (widget.paused && _ticker.isActive) {
+      _ticker.stop();
+      _lastTick = null;
     }
   }
 
@@ -55,12 +67,7 @@ class _GameViewState extends State<GameView>
   @override
   void didUpdateWidget(covariant GameView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.autoStart && !_ticker.isActive) {
-      _ticker.start();
-    } else if (!widget.autoStart && _ticker.isActive) {
-      _ticker.stop();
-      _lastTick = null;
-    }
+    _syncTicker();
   }
 
   @override
@@ -71,6 +78,9 @@ class _GameViewState extends State<GameView>
 
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
     widget.engine.eventBus.emit(RawInputEvent(keyEvent: event));
+    if (widget.onKeyEvent != null) {
+      widget.onKeyEvent!(event);
+    }
     return .handled;
   }
 
@@ -78,8 +88,8 @@ class _GameViewState extends State<GameView>
   Widget build(BuildContext context) {
     return Focus(
       focusNode: _focusNode,
-      autofocus: true,
       onKeyEvent: _handleKeyEvent,
+      autofocus: true,
       child: RepaintBoundary(
         child: CustomPaint(
           painter: Painter(
