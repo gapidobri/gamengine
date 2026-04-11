@@ -155,8 +155,14 @@ class RenderSystem extends System {
         DrawTiledSpriteCommand(
           image: sprite.image,
           tileSize: sprite.tileSize,
-          areaSize: sprite.areaSize,
-          position: Offset(transform.position.x, transform.position.y),
+          areaSize: sprite.extendInfinitely ? cullRect.size : sprite.areaSize,
+          position: sprite.extendInfinitely
+              ? cullRect.center
+              : Offset(transform.position.x, transform.position.y),
+          coverageRect: sprite.extendInfinitely ? cullRect : null,
+          tileOrigin: sprite.extendInfinitely
+              ? Offset(transform.position.x, transform.position.y)
+              : null,
           rotation: transform.rotation,
           scaleX: transform.scale.x,
           scaleY: transform.scale.y,

@@ -48,6 +48,13 @@ GameView(
 
 Non-eligible sprites fall back to per-sprite drawing.
 
+## Tiled Sprites
+
+`TiledSprite` repeats an image over a fixed `areaSize` by default.
+
+Set `extendInfinitely: true` to have it cover the camera cull rect instead,
+which is useful for repeating backgrounds that should never run out.
+
 ## Custom Render Passes
 
 `RenderSystem` owns the main render pipeline, but you can inject custom drawing

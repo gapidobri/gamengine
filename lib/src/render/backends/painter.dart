@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:gamengine/src/render/camera/camera_state.dart';
 import 'package:gamengine/src/render/commands/draw_rectangle_command.dart';
@@ -181,6 +183,12 @@ class Painter extends CustomPainter {
   }
 
   void _drawTiledSprite(Canvas canvas, DrawTiledSpriteCommand cmd) {
+    final coverageRect = cmd.coverageRect;
+    if (coverageRect != null) {
+      _drawInfiniteTiledSprite(canvas, cmd, coverageRect);
+      return;
+    }
+
     final areaW = cmd.areaSize.width * cmd.scaleX.abs();
     final areaH = cmd.areaSize.height * cmd.scaleY.abs();
     final tileW = cmd.tileSize.width * cmd.scaleX.abs();
@@ -218,6 +226,96 @@ class Painter extends CustomPainter {
     }
 
     canvas.restore();
+  }
+
+  void _drawInfiniteTiledSprite(
+    Canvas canvas,
+    DrawTiledSpriteCommand cmd,
+    Rect coverageRect,
+  ) {
+    final tileW = cmd.tileSize.width * cmd.scaleX.abs();
+    final tileH = cmd.tileSize.height * cmd.scaleY.abs();
+
+    if (coverageRect.isEmpty || tileW <= 0 || tileH <= 0) {
+      return;
+    }
+
+    final srcRect = Rect.fromLTWH(
+      0,
+      0,
+      cmd.image.width.toDouble(),
+      cmd.image.height.toDouble(),
+    );
+    final paint = cmd.paint ?? _spritePaint;
+    final origin = cmd.tileOrigin ?? cmd.position;
+
+    canvas.save();
+    canvas.clipRect(coverageRect);
+    canvas.translate(origin.dx, origin.dy);
+    canvas.rotate(cmd.rotation);
+
+    final localCoverage = _transformRectToLocal(
+      coverageRect,
+      origin,
+      cmd.rotation,
+    );
+    final startX = _floorToTile(localCoverage.left, tileW) - tileW;
+    final endX = _ceilToTile(localCoverage.right, tileW) + tileW;
+    final startY = _floorToTile(localCoverage.top, tileH) - tileH;
+    final endY = _ceilToTile(localCoverage.bottom, tileH) + tileH;
+
+    for (double x = startX; x < endX; x += tileW) {
+      for (double y = startY; y < endY; y += tileH) {
+        canvas.drawImageRect(
+          cmd.image,
+          srcRect,
+          Rect.fromLTWH(x, y, tileW, tileH),
+          paint,
+        );
+      }
+    }
+
+    canvas.restore();
+  }
+
+  Rect _transformRectToLocal(Rect rect, Offset origin, double rotation) {
+    final cosR = math.cos(rotation);
+    final sinR = math.sin(rotation);
+
+    Offset toLocal(Offset point) {
+      final dx = point.dx - origin.dx;
+      final dy = point.dy - origin.dy;
+      return Offset((dx * cosR) + (dy * sinR), (-dx * sinR) + (dy * cosR));
+    }
+
+    final points = <Offset>[
+      toLocal(rect.topLeft),
+      toLocal(rect.topRight),
+      toLocal(rect.bottomLeft),
+      toLocal(rect.bottomRight),
+    ];
+
+    var minX = points.first.dx;
+    var maxX = points.first.dx;
+    var minY = points.first.dy;
+    var maxY = points.first.dy;
+
+    for (final point in points.skip(1)) {
+      minX = math.min(minX, point.dx);
+      maxX = math.max(maxX, point.dx);
+      minY = math.min(minY, point.dy);
+      maxY = math.max(maxY, point.dy);
+    }
+
+    return Rect.fromLTRB(minX, minY, maxX, maxY);
+  }
+
+  double _floorToTile(double value, double tileSize) {
+    return (value / tileSize).floorToDouble() * tileSize;
+  }
+
+  double _ceilToTile(double value, double tileSize) {
+    return (value / tileSize).ceilToDouble() * tileSize;
   }
 
   @override

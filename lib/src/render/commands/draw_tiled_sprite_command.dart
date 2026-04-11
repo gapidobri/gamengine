@@ -10,6 +10,8 @@ class DrawTiledSpriteCommand extends RenderCommand {
     required this.tileSize,
     required this.areaSize,
     required this.position,
+    this.coverageRect,
+    this.tileOrigin,
     this.rotation = 0,
     this.scaleX = 0,
     this.scaleY = 0,
@@ -21,6 +23,8 @@ class DrawTiledSpriteCommand extends RenderCommand {
   final Size tileSize;
   final Size areaSize;
   final Offset position;
+  final Rect? coverageRect;
+  final Offset? tileOrigin;
   final double rotation;
   final double scaleX;
   final double scaleY;
@@ -29,6 +33,11 @@ class DrawTiledSpriteCommand extends RenderCommand {
 
   @override
   Rect get worldBounds {
+    final coverageRect = this.coverageRect;
+    if (coverageRect != null) {
+      return coverageRect;
+    }
+
     final width = areaSize.width * scaleX.abs();
     final height = areaSize.height * scaleY.abs();
 
