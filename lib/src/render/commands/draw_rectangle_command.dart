@@ -17,5 +17,14 @@ class DrawRectangleCommand extends RenderCommand {
   });
 
   @override
-  Rect get worldBounds => rect;
+  Rect get worldBounds {
+    final ax = anchor.dx * rect.width;
+    final ay = anchor.dy * rect.height;
+    return Rect.fromLTWH(
+      rect.left - ax,
+      rect.top - ay,
+      rect.width,
+      rect.height,
+    );
+  }
 }

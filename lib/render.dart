@@ -6,7 +6,6 @@ export 'src/render/commands/render_commands.dart';
 export 'src/render/components/components.dart';
 export 'src/render/core/render_metrics.dart';
 export 'src/render/core/render_queue.dart';
-export 'src/render/systems/particle_system.dart';
 export 'src/render/systems/render_pass.dart';
 export 'src/render/systems/render_system.dart';
 export 'src/render/systems/sprite_animation_system.dart';

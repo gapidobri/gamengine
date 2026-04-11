@@ -171,10 +171,11 @@ class Painter extends CustomPainter {
     final ay = cmd.anchor.dy * cmd.rect.height;
 
     canvas.save();
-    canvas.translate(cmd.rect.left - ax, cmd.rect.top - ay);
+    canvas.translate(cmd.rect.left, cmd.rect.top);
     canvas.rotate(cmd.rotation);
+    final rect = Rect.fromLTWH(-ax, -ay, cmd.rect.width, cmd.rect.height);
 
-    canvas.drawRect(cmd.rect, cmd.paint ?? _defaultPaint);
+    canvas.drawRect(rect, cmd.paint ?? _defaultPaint);
 
     canvas.restore();
   }

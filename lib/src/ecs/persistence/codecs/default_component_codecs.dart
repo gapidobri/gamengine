@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:gamengine/src/ecs/components/transform.dart';
 import 'package:gamengine/src/ecs/persistence/codecs/component_codec.dart';
 import 'package:gamengine/src/ecs/persistence/serializers/world_state_serializer.dart';
@@ -8,7 +6,6 @@ import 'package:gamengine/src/physics/components/colliders/rectangle_collider.da
 import 'package:gamengine/src/physics/components/gravity_source.dart';
 import 'package:gamengine/src/physics/components/rigid_body.dart';
 import 'package:gamengine/src/render/components/animated_sprite.dart';
-import 'package:gamengine/src/render/components/particle_emitter.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 class DefaultWorldComponentCodecs {
@@ -18,7 +15,6 @@ class DefaultWorldComponentCodecs {
     serializer.registerCodec<CircleCollider>(_CircleColliderCodec());
     serializer.registerCodec<RectangleCollider>(_RectangleColliderCodec());
     serializer.registerCodec<GravitySource>(_GravitySourceCodec());
-    serializer.registerCodec<ParticleEmitter>(_ParticleEmitterCodec());
     serializer.registerCodec<AnimatedSprite>(_AnimatedSpriteCodec());
   }
 }
@@ -110,6 +106,16 @@ class _CircleColliderCodec extends ComponentCodec<CircleCollider> {
   CircleCollider decode(Map<String, Object?> data) {
     return CircleCollider(
       radius: _readDouble(data, 'radius', fallback: 1),
+      collisionLayer: _readInt(
+        data,
+        'collisionLayer',
+        fallback: CircleCollider.defaultCollisionLayer,
+      ),
+      collisionMask: _readInt(
+        data,
+        'collisionMask',
+        fallback: CircleCollider.defaultCollisionMask,
+      ),
       restitution: _readDouble(data, 'restitution', fallback: 0.4),
       staticFriction: _readDouble(data, 'staticFriction', fallback: 0.6),
       dynamicFriction: _readDouble(data, 'dynamicFriction', fallback: 0.45),
@@ -121,6 +127,8 @@ class _CircleColliderCodec extends ComponentCodec<CircleCollider> {
   Map<String, Object?> encode(CircleCollider component) {
     return <String, Object?>{
       'radius': component.radius,
+      'collisionLayer': component.collisionLayer,
+      'collisionMask': component.collisionMask,
       'restitution': component.restitution,
       'staticFriction': component.staticFriction,
       'dynamicFriction': component.dynamicFriction,
@@ -138,6 +146,16 @@ class _RectangleColliderCodec extends ComponentCodec<RectangleCollider> {
     return RectangleCollider(
       halfWidth: _readDouble(data, 'halfWidth', fallback: 1),
       halfHeight: _readDouble(data, 'halfHeight', fallback: 1),
+      collisionLayer: _readInt(
+        data,
+        'collisionLayer',
+        fallback: RectangleCollider.defaultCollisionLayer,
+      ),
+      collisionMask: _readInt(
+        data,
+        'collisionMask',
+        fallback: RectangleCollider.defaultCollisionMask,
+      ),
       restitution: _readDouble(data, 'restitution', fallback: 0.4),
       staticFriction: _readDouble(data, 'staticFriction', fallback: 0.6),
       dynamicFriction: _readDouble(data, 'dynamicFriction', fallback: 0.45),
@@ -150,6 +168,8 @@ class _RectangleColliderCodec extends ComponentCodec<RectangleCollider> {
     return <String, Object?>{
       'halfWidth': component.halfWidth,
       'halfHeight': component.halfHeight,
+      'collisionLayer': component.collisionLayer,
+      'collisionMask': component.collisionMask,
       'restitution': component.restitution,
       'staticFriction': component.staticFriction,
       'dynamicFriction': component.dynamicFriction,
@@ -177,81 +197,6 @@ class _GravitySourceCodec extends ComponentCodec<GravitySource> {
       'mass': component.mass,
       'minDistance': component.minDistance,
       'enabled': component.enabled,
-    };
-  }
-}
-
-class _ParticleEmitterCodec extends ComponentCodec<ParticleEmitter> {
-  @override
-  String get typeId => 'render.particleEmitter';
-
-  @override
-  ParticleEmitter decode(Map<String, Object?> data) {
-    final emitter = ParticleEmitter(
-      enabled: _readBool(data, 'enabled', fallback: true),
-      emissionRate: _readDouble(data, 'emissionRate', fallback: 0),
-      burstCount: _readInt(data, 'burstCount', fallback: 0),
-      spread: _readDouble(data, 'spread', fallback: 0.4),
-      speedMin: _readDouble(data, 'speedMin', fallback: 10),
-      speedMax: _readDouble(data, 'speedMax', fallback: 30),
-      lifetimeMin: _readDouble(data, 'lifetimeMin', fallback: 0.2),
-      lifetimeMax: _readDouble(data, 'lifetimeMax', fallback: 0.8),
-      sizeStartMin: _readDouble(data, 'sizeStartMin', fallback: 1),
-      sizeStartMax: _readDouble(data, 'sizeStartMax', fallback: 2.5),
-      sizeEndMin: _readDouble(data, 'sizeEndMin', fallback: 0),
-      sizeEndMax: _readDouble(data, 'sizeEndMax', fallback: 1),
-      drag: _readDouble(data, 'drag', fallback: 0),
-      z: _readInt(data, 'z', fallback: 1),
-      localOffset: _readVector2(data, 'localOffset'),
-      localDirection: _readVector2(
-        data,
-        'localDirection',
-        fallback: Vector2(0, 1),
-      ),
-      alignToRotation: _readBool(data, 'alignToRotation', fallback: true),
-      colorStart: Color(
-        _readInt(
-          data,
-          'colorStart',
-          fallback: const Color(0xFFFFE08A).toARGB32(),
-        ),
-      ),
-      colorEnd: Color(
-        _readInt(
-          data,
-          'colorEnd',
-          fallback: const Color(0x00FF6A00).toARGB32(),
-        ),
-      ),
-    );
-
-    emitter.spawnRemainder = _readDouble(data, 'spawnRemainder', fallback: 0);
-    return emitter;
-  }
-
-  @override
-  Map<String, Object?> encode(ParticleEmitter component) {
-    return <String, Object?>{
-      'enabled': component.enabled,
-      'emissionRate': component.emissionRate,
-      'burstCount': component.burstCount,
-      'spread': component.spread,
-      'speedMin': component.speedMin,
-      'speedMax': component.speedMax,
-      'lifetimeMin': component.lifetimeMin,
-      'lifetimeMax': component.lifetimeMax,
-      'sizeStartMin': component.sizeStartMin,
-      'sizeStartMax': component.sizeStartMax,
-      'sizeEndMin': component.sizeEndMin,
-      'sizeEndMax': component.sizeEndMax,
-      'drag': component.drag,
-      'z': component.z,
-      'localOffset': _vector2ToList(component.localOffset),
-      'localDirection': _vector2ToList(component.localDirection),
-      'alignToRotation': component.alignToRotation,
-      'colorStart': component.colorStart.toARGB32(),
-      'colorEnd': component.colorEnd.toARGB32(),
-      'spawnRemainder': component.spawnRemainder,
     };
   }
 }

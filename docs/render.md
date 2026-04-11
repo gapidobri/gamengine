@@ -8,8 +8,8 @@ import 'package:gamengine/render.dart';
 
 ## What It Contains
 
-- Components: `Sprite`, `TiledSprite`, `AnimatedSprite`, `ParticleEmitter`
-- Systems: `RenderSystem`, `SpriteAnimationSystem`, `ParticleSystem`, `DebugSystem`
+- Components: `Sprite`, `TiledSprite`, `AnimatedSprite`
+- Systems: `RenderSystem`, `SpriteAnimationSystem`, `DebugSystem`
 - Runtime: `RenderQueue`, `RenderMetrics`, `CameraState`, `CameraFollowSystem`, `RenderPass`
 - Flutter bridge: `GameView` + `Painter`
 
@@ -18,15 +18,12 @@ import 'package:gamengine/render.dart';
 ```dart
 final queue = RenderQueue();
 final camera = CameraState();
-final particles = ParticleSystem(world: world);
 
 engine.addSystem(SpriteAnimationSystem(world: world), 950);
-engine.addSystem(particles, 480);
 engine.addSystem(
   RenderSystem(
     queue: queue,
     camera: camera,
-    particleSystem: particles,
   ),
 );
 ```
@@ -113,7 +110,6 @@ class OffscreenIndicatorPass extends RenderPass {
 final renderSystem = RenderSystem(
   queue: queue,
   camera: camera,
-  particleSystem: particles,
   passes: const [OffscreenIndicatorPass()],
 );
 ```

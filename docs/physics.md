@@ -37,6 +37,45 @@ final planet = Entity()
   ..add(CircleCollider(radius: 90));
 ```
 
+## Collision Filtering
+
+Colliders now support bitmask-based filtering:
+
+- `collisionLayer`: which layer the collider belongs to
+- `collisionMask`: which layers it is allowed to collide with
+
+Both colliders must allow the pair for collision resolution to happen.
+
+```dart
+const playerLayer = 1 << 0;
+const enemyLayer = 1 << 1;
+const pickupLayer = 1 << 2;
+
+final player = Entity()
+  ..add(Transform())
+  ..add(RigidBody())
+  ..add(
+    CircleCollider(
+      radius: 14,
+      collisionLayer: playerLayer,
+      collisionMask: enemyLayer,
+    ),
+  );
+
+final pickup = Entity()
+  ..add(Transform())
+  ..add(
+    CircleCollider(
+      radius: 8,
+      collisionLayer: pickupLayer,
+      collisionMask: 0,
+    ),
+  );
+```
+
+In this example, the player can collide with enemies, and the pickup collides
+with nothing.
+
 ## Collision Consumption
 
 ```dart

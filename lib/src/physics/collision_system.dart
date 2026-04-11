@@ -113,6 +113,9 @@ class CollisionSystem extends System {
         if (entryA.entity == entryB.entity) {
           continue;
         }
+        if (!entryA.collider.canCollideWith(entryB.collider)) {
+          continue;
+        }
 
         final check = _resolveCheck(entryA.collider, entryB.collider);
         if (check == null) {

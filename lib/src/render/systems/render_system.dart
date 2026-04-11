@@ -1,15 +1,12 @@
 import 'dart:ui';
 
 import 'package:gamengine/gamengine.dart';
-import 'package:gamengine/src/extensions/vector2.dart';
 import 'package:gamengine/src/render/commands/draw_rectangle_command.dart';
-import 'package:gamengine/src/render/components/rectangle_shape.dart';
 
 class RenderSystem extends System {
   final RenderQueue queue;
   final CameraState camera;
   final RenderMetrics metrics;
-  final ParticleSystem? particleSystem;
   final List<RenderPass> _passes;
 
   RenderSystem({
@@ -17,7 +14,6 @@ class RenderSystem extends System {
     required this.camera,
     List<RenderPass>? passes,
     RenderMetrics? metrics,
-    this.particleSystem,
   }) : metrics = metrics ?? RenderMetrics(),
        _passes = [...?passes] {
     _sortPasses();
@@ -50,14 +46,6 @@ class RenderSystem extends System {
     _emitTiledSpriteCommands(world, cullRect);
     _emitCircleCommands(world, cullRect);
     _emitRectangleCommands(world, cullRect);
-    final particles = particleSystem;
-    if (particles != null) {
-      metrics.sceneItems += particles.aliveCount;
-      metrics.drawnItems += particles.writeRenderCommands(
-        queue: queue,
-        cullRect: cullRect,
-      );
-    }
 
     _writePasses(world, RenderPassStage.afterWorld);
 
@@ -142,6 +130,7 @@ class RenderSystem extends System {
       _addIfVisible(
         DrawRectangleCommand(
           rect: transform.position.toOffset() & rectangle.size,
+          rotation: transform.rotation,
           anchor: rectangle.anchor,
           paint: rectangle.paint,
           z: rectangle.z,
