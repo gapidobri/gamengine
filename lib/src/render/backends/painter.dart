@@ -30,8 +30,29 @@ class Painter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    camera.viewportWidth = size.width;
-    camera.viewportHeight = size.height;
+    final hasLockedViewport =
+        camera.targetViewportWidth > 0 && camera.targetViewportHeight > 0;
+    final targetWidth = hasLockedViewport
+        ? camera.targetViewportWidth
+        : size.width;
+    final targetHeight = hasLockedViewport
+        ? camera.targetViewportHeight
+        : size.height;
+
+    final safeTargetWidth = targetWidth <= 0 ? 1.0 : targetWidth;
+    final safeTargetHeight = targetHeight <= 0 ? 1.0 : targetHeight;
+
+    final fitScale = math.min(
+      size.width / safeTargetWidth,
+      size.height / safeTargetHeight,
+    );
+    final viewportScale = fitScale.isFinite && fitScale > 0 ? fitScale : 1.0;
+
+    camera.viewportWidth = size.width / viewportScale;
+    camera.viewportHeight = size.height / viewportScale;
+    camera.viewportScale = viewportScale;
+    camera.viewportOffsetX = 0;
+    camera.viewportOffsetY = 0;
 
     canvas.drawRect(
       Rect.fromLTWH(0, 0, size.width, size.height),
@@ -40,6 +61,7 @@ class Painter extends CustomPainter {
 
     canvas.save();
     canvas.translate(size.width / 2, size.height / 2);
+    canvas.scale(viewportScale);
     canvas.scale(camera.zoom);
     canvas.translate(-camera.position.x, -camera.position.y);
 

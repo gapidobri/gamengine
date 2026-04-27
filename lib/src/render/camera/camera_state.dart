@@ -3,12 +3,20 @@ import 'dart:ui';
 import 'package:vector_math/vector_math_64.dart';
 
 class CameraState {
+  CameraState({this.targetViewportWidth = 0, this.targetViewportHeight = 0});
+
   final Vector2 position = Vector2.zero();
   double zoom = 1;
   double cullingPadding = 128.0;
 
+  double targetViewportWidth;
+  double targetViewportHeight;
+
   double viewportWidth = 0;
   double viewportHeight = 0;
+  double viewportScale = 1;
+  double viewportOffsetX = 0;
+  double viewportOffsetY = 0;
 
   Rect get worldViewRect {
     final safeZoom = zoom <= 0 ? 1.0 : zoom;
