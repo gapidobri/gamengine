@@ -1,7 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:gamengine/src/assets/asset_manager.dart';
+import 'package:gamengine/asset.dart';
 
 /// Paints a sprite from a decoded [ui.Image], optionally using an atlas slice.
 ///
@@ -20,7 +20,7 @@ class SpriteWidget extends StatelessWidget {
     this.paint,
   });
 
-  final ui.Image image;
+  final Asset<ui.Image> image;
   final Rect? sourceRect;
   final double? width;
   final double? height;
@@ -31,7 +31,7 @@ class SpriteWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final src = _resolvedSourceRect(image, sourceRect);
+    final src = _resolvedSourceRect(image.data, sourceRect);
     final resolvedSize = _resolvedSize(src, width: width, height: height);
 
     return SizedBox(
@@ -39,7 +39,7 @@ class SpriteWidget extends StatelessWidget {
       height: resolvedSize.height,
       child: CustomPaint(
         painter: _SpritePainter(
-          image: image,
+          image: image.data,
           sourceRect: src,
           outputSize: resolvedSize,
           fit: fit,
@@ -129,7 +129,7 @@ class AssetSpriteWidget extends StatefulWidget {
 }
 
 class _AssetSpriteWidgetState extends State<AssetSpriteWidget> {
-  ui.Image? _image;
+  Asset<ui.Image>? _image;
 
   @override
   void initState() {

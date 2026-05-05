@@ -88,7 +88,7 @@ class RenderSystem extends System {
 
       _addIfVisible(
         DrawSpriteCommand(
-          image: image,
+          image: image.data,
           src: sprite.sourceRect,
           position: Offset(transform.position.x, transform.position.y),
           rotation: transform.rotation,
@@ -112,7 +112,7 @@ class RenderSystem extends System {
         DrawCircleCommand(
           center: Offset(transform.position.x, transform.position.y),
           radius: circle.radius,
-          paint: circle.paint,
+          paint: circle.paint?.toPaint(),
           z: circle.z,
         ),
         cullRect,
@@ -132,7 +132,7 @@ class RenderSystem extends System {
           rect: transform.position.toOffset() & rectangle.size,
           rotation: transform.rotation,
           anchor: rectangle.anchor,
-          paint: rectangle.paint,
+          paint: rectangle.paint?.toPaint(),
           z: rectangle.z,
         ),
         cullRect,
@@ -153,7 +153,7 @@ class RenderSystem extends System {
 
       _addIfVisible(
         DrawTiledSpriteCommand(
-          image: sprite.image,
+          image: sprite.image.data,
           tileSize: sprite.tileSize,
           areaSize: sprite.extendInfinitely ? cullRect.size : sprite.areaSize,
           position: sprite.extendInfinitely
@@ -167,7 +167,7 @@ class RenderSystem extends System {
           scaleX: transform.scale.x,
           scaleY: transform.scale.y,
           anchor: sprite.anchor,
-          paint: sprite.paint,
+          paint: sprite.paint?.toPaint(),
           z: sprite.z,
         ),
         cullRect,

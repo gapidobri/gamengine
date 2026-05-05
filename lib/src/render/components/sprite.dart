@@ -1,10 +1,10 @@
 import 'dart:ui';
 
-import 'package:gamengine/src/render/components/drawable.dart';
+import 'package:gamengine/gamengine.dart';
 
 class Sprite extends Drawable {
   bool visible;
-  Image? image;
+  Asset<Image>? image;
   Rect? sourceRect;
 
   Sprite({

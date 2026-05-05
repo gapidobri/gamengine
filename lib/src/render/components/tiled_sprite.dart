@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:gamengine/asset.dart';
 import 'package:gamengine/src/render/components/drawable.dart';
 
 class TiledSprite extends Drawable {
@@ -14,7 +15,7 @@ class TiledSprite extends Drawable {
     super.z = 0,
   });
 
-  Image image;
+  Asset<Image> image;
   Size tileSize;
   Size areaSize;
   bool extendInfinitely;

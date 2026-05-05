@@ -1,21 +1,20 @@
-import 'package:gamengine/src/ecs/components/transform.dart';
-import 'package:gamengine/src/ecs/persistence/codecs/component_codec.dart';
-import 'package:gamengine/src/ecs/persistence/serializers/world_state_serializer.dart';
-import 'package:gamengine/src/physics/components/colliders/circle_collider.dart';
-import 'package:gamengine/src/physics/components/colliders/rectangle_collider.dart';
-import 'package:gamengine/src/physics/components/gravity_source.dart';
-import 'package:gamengine/src/physics/components/rigid_body.dart';
-import 'package:gamengine/src/render/components/animated_sprite.dart';
-import 'package:vector_math/vector_math_64.dart';
+import 'package:gamengine/gamengine.dart';
 
 class DefaultWorldComponentCodecs {
   static void register(WorldStateSerializer serializer) {
     serializer.registerCodec<Transform>(_TransformCodec());
+    serializer.registerCodec<LocalTransform>(_LocalTransformCodec());
+    serializer.registerCodec<Parent>(_ParentCodec());
     serializer.registerCodec<RigidBody>(_RigidBodyCodec());
     serializer.registerCodec<CircleCollider>(_CircleColliderCodec());
     serializer.registerCodec<RectangleCollider>(_RectangleColliderCodec());
     serializer.registerCodec<GravitySource>(_GravitySourceCodec());
+    serializer.registerCodec<Sprite>(_SpriteCodec());
     serializer.registerCodec<AnimatedSprite>(_AnimatedSpriteCodec());
+    serializer.registerCodec<TiledSprite>(_TiledSpriteCodec());
+    serializer.registerCodec<CameraFollowTarget>(_CameraFollowTargetCodec());
+    serializer.registerCodec<CircleShape>(_CircleShapeCodec());
+    serializer.registerCodec<RectangleShape>(_RectangleShapeCodec());
   }
 }
 
@@ -26,19 +25,57 @@ class _TransformCodec extends ComponentCodec<Transform> {
   @override
   Transform decode(Map<String, Object?> data) {
     return Transform(
-      position: _readVector2(data, 'position'),
-      rotation: _readDouble(data, 'rotation', fallback: 0),
-      scale: _readVector2(data, 'scale', fallback: Vector2.all(1)),
+      position: decodeVector2(data, 'position'),
+      rotation: decodeDouble(data, 'rotation')!,
+      scale: decodeVector2(data, 'scale', fallback: Vector2.all(1)),
     );
   }
 
   @override
   Map<String, Object?> encode(Transform component) {
     return <String, Object?>{
-      'position': _vector2ToList(component.position),
+      'position': encodeVector2(component.position),
       'rotation': component.rotation,
-      'scale': _vector2ToList(component.scale),
+      'scale': encodeVector2(component.scale),
     };
+  }
+}
+
+class _LocalTransformCodec extends ComponentCodec<LocalTransform> {
+  @override
+  String get typeId => 'ecs.localTransform';
+
+  @override
+  LocalTransform decode(Map<String, Object?> data) {
+    return LocalTransform(
+      position: decodeVector2(data, 'position'),
+      rotation: decodeDouble(data, 'rotation')!,
+      scale: decodeVector2(data, 'scale', fallback: Vector2.all(1)),
+    );
+  }
+
+  @override
+  Map<String, Object?> encode(LocalTransform component) {
+    return <String, Object?>{
+      'position': encodeVector2(component.position),
+      'rotation': component.rotation,
+      'scale': encodeVector2(component.scale),
+    };
+  }
+}
+
+class _ParentCodec extends ComponentCodec<Parent> {
+  @override
+  String get typeId => 'ecs.parent';
+
+  @override
+  Parent decode(Map<String, Object?> data) {
+    return Parent(parent: data['parent'] as Entity);
+  }
+
+  @override
+  Map<String, Object?> encode(Parent component) {
+    return <String, Object?>{'parent': component.parent};
   }
 }
 
@@ -49,29 +86,25 @@ class _RigidBodyCodec extends ComponentCodec<RigidBody> {
   @override
   RigidBody decode(Map<String, Object?> data) {
     final body = RigidBody(
-      velocity: _readVector2(data, 'velocity'),
-      mass: _readDouble(data, 'mass', fallback: 1),
-      angularVelocity: _readDouble(data, 'angularVelocity', fallback: 0),
-      linearDamping: _readDouble(data, 'linearDamping', fallback: 0),
-      angularDamping: _readDouble(data, 'angularDamping', fallback: 0),
-      gravityScale: _readDouble(data, 'gravityScale', fallback: 1),
-      useGravity: _readBool(data, 'useGravity', fallback: true),
-      isStatic: _readBool(data, 'isStatic', fallback: false),
-      angularAcceleration: _readDouble(
-        data,
-        'angularAcceleration',
-        fallback: 0,
-      ),
-      accumulatedTorque: _readDouble(data, 'accumulatedTorque', fallback: 0),
-      momentOfInertia: _readDouble(data, 'momentOfInertia', fallback: 0),
-      lockRotation: _readBool(data, 'lockRotation', fallback: false),
+      velocity: decodeVector2(data, 'velocity'),
+      mass: decodeDouble(data, 'mass')!,
+      angularVelocity: decodeDouble(data, 'angularVelocity')!,
+      linearDamping: decodeDouble(data, 'linearDamping')!,
+      angularDamping: decodeDouble(data, 'angularDamping')!,
+      gravityScale: decodeDouble(data, 'gravityScale')!,
+      useGravity: decodeBool(data, 'useGravity')!,
+      isStatic: decodeBool(data, 'isStatic')!,
+      angularAcceleration: decodeDouble(data, 'angularAcceleration')!,
+      accumulatedTorque: decodeDouble(data, 'accumulatedTorque')!,
+      momentOfInertia: decodeDouble(data, 'momentOfInertia')!,
+      lockRotation: decodeBool(data, 'lockRotation')!,
     );
 
     body.acceleration.setFrom(
-      _readVector2(data, 'acceleration', fallback: Vector2.zero()),
+      decodeVector2(data, 'acceleration', fallback: Vector2.zero()),
     );
     body.accumulatedForce.setFrom(
-      _readVector2(data, 'accumulatedForce', fallback: Vector2.zero()),
+      decodeVector2(data, 'accumulatedForce', fallback: Vector2.zero()),
     );
 
     return body;
@@ -80,9 +113,9 @@ class _RigidBodyCodec extends ComponentCodec<RigidBody> {
   @override
   Map<String, Object?> encode(RigidBody component) {
     return <String, Object?>{
-      'velocity': _vector2ToList(component.velocity),
-      'acceleration': _vector2ToList(component.acceleration),
-      'accumulatedForce': _vector2ToList(component.accumulatedForce),
+      'velocity': encodeVector2(component.velocity),
+      'acceleration': encodeVector2(component.acceleration),
+      'accumulatedForce': encodeVector2(component.accumulatedForce),
       'mass': component.mass,
       'angularVelocity': component.angularVelocity,
       'angularAcceleration': component.angularAcceleration,
@@ -105,21 +138,13 @@ class _CircleColliderCodec extends ComponentCodec<CircleCollider> {
   @override
   CircleCollider decode(Map<String, Object?> data) {
     return CircleCollider(
-      radius: _readDouble(data, 'radius', fallback: 1),
-      collisionLayer: _readInt(
-        data,
-        'collisionLayer',
-        fallback: CircleCollider.defaultCollisionLayer,
-      ),
-      collisionMask: _readInt(
-        data,
-        'collisionMask',
-        fallback: CircleCollider.defaultCollisionMask,
-      ),
-      restitution: _readDouble(data, 'restitution', fallback: 0.4),
-      staticFriction: _readDouble(data, 'staticFriction', fallback: 0.6),
-      dynamicFriction: _readDouble(data, 'dynamicFriction', fallback: 0.45),
-      enabled: _readBool(data, 'enabled', fallback: true),
+      radius: decodeDouble(data, 'radius')!,
+      collisionLayer: decodeInt(data, 'collisionLayer')!,
+      collisionMask: decodeInt(data, 'collisionMask')!,
+      restitution: decodeDouble(data, 'restitution')!,
+      staticFriction: decodeDouble(data, 'staticFriction')!,
+      dynamicFriction: decodeDouble(data, 'dynamicFriction')!,
+      enabled: decodeBool(data, 'enabled')!,
     );
   }
 
@@ -144,22 +169,14 @@ class _RectangleColliderCodec extends ComponentCodec<RectangleCollider> {
   @override
   RectangleCollider decode(Map<String, Object?> data) {
     return RectangleCollider(
-      halfWidth: _readDouble(data, 'halfWidth', fallback: 1),
-      halfHeight: _readDouble(data, 'halfHeight', fallback: 1),
-      collisionLayer: _readInt(
-        data,
-        'collisionLayer',
-        fallback: RectangleCollider.defaultCollisionLayer,
-      ),
-      collisionMask: _readInt(
-        data,
-        'collisionMask',
-        fallback: RectangleCollider.defaultCollisionMask,
-      ),
-      restitution: _readDouble(data, 'restitution', fallback: 0.4),
-      staticFriction: _readDouble(data, 'staticFriction', fallback: 0.6),
-      dynamicFriction: _readDouble(data, 'dynamicFriction', fallback: 0.45),
-      enabled: _readBool(data, 'enabled', fallback: true),
+      halfWidth: decodeDouble(data, 'halfWidth')!,
+      halfHeight: decodeDouble(data, 'halfHeight')!,
+      collisionLayer: decodeInt(data, 'collisionLayer')!,
+      collisionMask: decodeInt(data, 'collisionMask')!,
+      restitution: decodeDouble(data, 'restitution')!,
+      staticFriction: decodeDouble(data, 'staticFriction')!,
+      dynamicFriction: decodeDouble(data, 'dynamicFriction')!,
+      enabled: decodeBool(data, 'enabled')!,
     );
   }
 
@@ -185,9 +202,9 @@ class _GravitySourceCodec extends ComponentCodec<GravitySource> {
   @override
   GravitySource decode(Map<String, Object?> data) {
     return GravitySource(
-      mass: _readDouble(data, 'mass', fallback: 0),
-      minDistance: _readDouble(data, 'minDistance', fallback: 1),
-      enabled: _readBool(data, 'enabled', fallback: true),
+      mass: decodeDouble(data, 'mass')!,
+      minDistance: decodeDouble(data, 'minDistance')!,
+      enabled: decodeBool(data, 'enabled')!,
     );
   }
 
@@ -201,6 +218,33 @@ class _GravitySourceCodec extends ComponentCodec<GravitySource> {
   }
 }
 
+class _SpriteCodec extends ComponentCodec<Sprite> {
+  @override
+  String get typeId => 'render.sprite';
+
+  @override
+  Sprite decode(Map<String, Object?> data) {
+    return Sprite(
+      visible: decodeBool(data, 'visible')!,
+      image: decodeImage(data, 'image'),
+      sourceRect: decodeRect(data, 'sourceRect'),
+      paint: decodePaint(data, 'paint'),
+      z: decodeInt(data, 'z')!,
+    );
+  }
+
+  @override
+  Map<String, Object?> encode(Sprite component) {
+    return {
+      'visible': component.visible,
+      'image': encodeImage(component.image),
+      'sourceRect': encodeRect(component.sourceRect),
+      'paint': encodePaint(component.paint),
+      'z': component.z,
+    };
+  }
+}
+
 class _AnimatedSpriteCodec extends ComponentCodec<AnimatedSprite> {
   @override
   String get typeId => 'render.animatedSprite';
@@ -208,17 +252,17 @@ class _AnimatedSpriteCodec extends ComponentCodec<AnimatedSprite> {
   @override
   AnimatedSprite decode(Map<String, Object?> data) {
     final animatedSprite = AnimatedSprite(
-      frameWidth: _readInt(data, 'frameWidth', fallback: 0),
-      frameHeight: _readInt(data, 'frameHeight', fallback: 0),
-      frameCount: _readInt(data, 'frameCount', fallback: 0),
-      firstFrame: _readInt(data, 'firstFrame', fallback: 0),
-      framesPerSecond: _readDouble(data, 'framesPerSecond', fallback: 0),
-      loop: _readBool(data, 'loop', fallback: true),
-      playing: _readBool(data, 'playing', fallback: true),
+      frameWidth: decodeInt(data, 'frameWidth')!,
+      frameHeight: decodeInt(data, 'frameHeight')!,
+      frameCount: decodeInt(data, 'frameCount')!,
+      firstFrame: decodeInt(data, 'firstFrame')!,
+      framesPerSecond: decodeDouble(data, 'framesPerSecond')!,
+      loop: decodeBool(data, 'loop')!,
+      playing: decodeBool(data, 'playing')!,
     );
 
-    animatedSprite.currentFrame = _readInt(data, 'currentFrame', fallback: 0);
-    animatedSprite.elapsedTime = _readDouble(data, 'elapsedTime', fallback: 0);
+    animatedSprite.currentFrame = decodeInt(data, 'currentFrame')!;
+    animatedSprite.elapsedTime = decodeDouble(data, 'elapsedTime')!;
     return animatedSprite;
   }
 
@@ -238,46 +282,98 @@ class _AnimatedSpriteCodec extends ComponentCodec<AnimatedSprite> {
   }
 }
 
-List<Object?> _vector2ToList(Vector2 value) => <Object?>[value.x, value.y];
+class _TiledSpriteCodec extends ComponentCodec<TiledSprite> {
+  @override
+  String get typeId => 'render.tiledSprite';
 
-Vector2 _readVector2(
-  Map<String, Object?> data,
-  String key, {
-  Vector2? fallback,
-}) {
-  final value = data[key];
-  if (value is List && value.length >= 2) {
-    final x = (value[0] as num?)?.toDouble();
-    final y = (value[1] as num?)?.toDouble();
-    if (x != null && y != null) {
-      return Vector2(x, y);
-    }
+  @override
+  TiledSprite decode(Map<String, Object?> data) {
+    return TiledSprite(
+      image: decodeImage(data, 'image'),
+      tileSize: decodeSize(data, 'tileSize')!,
+      areaSize: decodeSize(data, 'areaSize')!,
+      extendInfinitely: decodeBool(data, 'extendInfinitely')!,
+      visible: decodeBool(data, 'visible')!,
+      anchor: decodeOffset(data, 'anchor')!,
+      paint: decodePaint(data, 'paint'),
+      z: decodeInt(data, 'z')!,
+    );
   }
-  if (fallback != null) {
-    return Vector2.copy(fallback);
+
+  @override
+  Map<String, Object?> encode(TiledSprite component) {
+    return {
+      'image': encodeImage(component.image),
+      'tileSize': encodeSize(component.tileSize),
+      'areaSize': encodeSize(component.areaSize),
+      'extendInfinitely': component.extendInfinitely,
+      'visible': component.visible,
+      'anchor': encodeOffset(component.anchor),
+      'paint': encodePaint(component.paint),
+      'z': component.z,
+    };
   }
-  return Vector2.zero();
 }
 
-double _readDouble(
-  Map<String, Object?> data,
-  String key, {
-  required double fallback,
-}) {
-  final value = data[key];
-  return value is num ? value.toDouble() : fallback;
+class _CameraFollowTargetCodec extends ComponentCodec<CameraFollowTarget> {
+  @override
+  String get typeId => 'render.cameraFollowTarget';
+
+  @override
+  CameraFollowTarget decode(Map<String, Object?> data) {
+    return CameraFollowTarget();
+  }
+
+  @override
+  Map<String, Object?> encode(CameraFollowTarget component) {
+    return {};
+  }
 }
 
-int _readInt(Map<String, Object?> data, String key, {required int fallback}) {
-  final value = data[key];
-  return value is num ? value.toInt() : fallback;
+class _CircleShapeCodec extends ComponentCodec<CircleShape> {
+  @override
+  String get typeId => 'render.circleShape';
+
+  @override
+  CircleShape decode(Map<String, Object?> data) {
+    return CircleShape(
+      radius: decodeDouble(data, 'radius')!,
+      paint: decodePaint(data, 'paint'),
+      z: decodeInt(data, 'z')!,
+    );
+  }
+
+  @override
+  Map<String, Object?> encode(CircleShape component) {
+    return {
+      'radius': component.radius,
+      'paint': component.paint != null ? encodePaint(component.paint!) : null,
+      'z': component.z,
+    };
+  }
 }
 
-bool _readBool(
-  Map<String, Object?> data,
-  String key, {
-  required bool fallback,
-}) {
-  final value = data[key];
-  return value is bool ? value : fallback;
+class _RectangleShapeCodec extends ComponentCodec<RectangleShape> {
+  @override
+  String get typeId => 'render.rectangleShape';
+
+  @override
+  RectangleShape decode(Map<String, Object?> data) {
+    return RectangleShape(
+      size: decodeSize(data, 'size')!,
+      anchor: decodeOffset(data, 'anchor')!,
+      paint: decodePaint(data, 'paint'),
+      z: decodeInt(data, 'z')!,
+    );
+  }
+
+  @override
+  Map<String, Object?> encode(RectangleShape component) {
+    return {
+      'size': encodeSize(component.size),
+      'anchor': encodeOffset(component.anchor),
+      'paint': component.paint != null ? encodePaint(component.paint!) : null,
+      'z': component.z,
+    };
+  }
 }

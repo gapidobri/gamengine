@@ -1,7 +1,4 @@
-import 'package:gamengine/src/ecs/components/component.dart';
-import 'package:gamengine/src/ecs/entity.dart';
-import 'package:gamengine/src/ecs/persistence/codecs/component_codec.dart';
-import 'package:gamengine/src/ecs/world.dart';
+import 'package:gamengine/gamengine.dart';
 
 class WorldStateSerializer {
   final Map<Type, ComponentCodec<Component>> _codecsByType =
@@ -44,10 +41,17 @@ class WorldStateSerializer {
           continue;
         }
 
-        components[codec.typeId] = codec.encode(component);
+        final encodedComponent = codec.encode(component);
+
+        _serializeEntities(encodedComponent);
+
+        components[codec.typeId] = encodedComponent;
       }
 
-      entities.add(<String, Object?>{'components': components});
+      entities.add(<String, Object?>{
+        'id': entity.id,
+        'components': components,
+      });
     }
 
     return <String, Object?>{
@@ -72,6 +76,12 @@ class WorldStateSerializer {
       world.clear();
     }
 
+    final entities = <int, Entity>{};
+
+    for (final rawEntity in rawEntities) {
+      entities[rawEntity['id']] = Entity(id: rawEntity['id']);
+    }
+
     for (final rawEntity in rawEntities) {
       if (rawEntity is! Map) {
         throw FormatException('Entity entry must be an object map.');
@@ -82,27 +92,105 @@ class WorldStateSerializer {
         throw FormatException('Entity "components" must be an object map.');
       }
 
-      final entity = Entity();
+      final entity = entities[rawEntity['id']]!;
 
       for (final entry in componentsRaw.entries) {
         final typeId = entry.key.toString();
         final codec = _codecsById[typeId];
         if (codec == null) {
           if (throwOnUnknownComponentType) {
-            throw StateError('No serializer registered for component typeId $typeId.');
+            throw StateError(
+              'No serializer registered for component typeId $typeId.',
+            );
           }
           continue;
         }
 
         final payload = entry.value;
         if (payload is! Map) {
-          throw FormatException('Component payload for $typeId must be an object map.');
+          throw FormatException(
+            'Component payload for $typeId must be an object map.',
+          );
         }
+
+        _deserializeEntities(payload, entities);
 
         entity.add(codec.decode(Map<String, Object?>.from(payload)));
       }
 
       world.addEntity(entity);
+    }
+  }
+
+  void _serializeEntities(Object? value) {
+    _serializeEntityValue(value);
+  }
+
+  void _deserializeEntities(Object? value, Map<int, Entity> entities) {
+    _deserializeEntityValue(value, entities);
+  }
+
+  Object? _serializeEntityValue(Object? value) {
+    switch (value) {
+      case Entity(:final id):
+        return {'\$entityRef': id};
+
+      case Map<dynamic, dynamic> map:
+        final keys = map.keys.toList(growable: false);
+        for (final key in keys) {
+          map[key] = _serializeEntityValue(map[key]);
+        }
+        return map;
+
+      case List<dynamic> list:
+        for (var i = 0; i < list.length; i++) {
+          list[i] = _serializeEntityValue(list[i]);
+        }
+        return list;
+
+      case Set<dynamic> set:
+        final updated = set.map(_serializeEntityValue).toList(growable: false);
+        set
+          ..clear()
+          ..addAll(updated);
+        return set;
+
+      default:
+        return value;
+    }
+  }
+
+  Object? _deserializeEntityValue(Object? value, Map<int, Entity> entities) {
+    switch (value) {
+      case Map<dynamic, dynamic> map:
+        final entityId = map['\$entityRef'];
+        if (entityId is int) {
+          return entities[entityId];
+        }
+
+        final keys = map.keys.toList(growable: false);
+        for (final key in keys) {
+          map[key] = _deserializeEntityValue(map[key], entities);
+        }
+        return map;
+
+      case List<dynamic> list:
+        for (var i = 0; i < list.length; i++) {
+          list[i] = _deserializeEntityValue(list[i], entities);
+        }
+        return list;
+
+      case Set<dynamic> set:
+        final updated = set
+            .map((value) => _deserializeEntityValue(value, entities))
+            .toList(growable: false);
+        set
+          ..clear()
+          ..addAll(updated);
+        return set;
+
+      default:
+        return value;
     }
   }
 }

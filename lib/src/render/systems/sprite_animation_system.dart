@@ -63,7 +63,7 @@ class SpriteAnimationSystem extends System {
         }
       }
 
-      _applyFrame(sprite: sprite, animation: animation, image: image);
+      _applyFrame(sprite: sprite, animation: animation, image: image.data);
     }
   }
 

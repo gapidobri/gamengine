@@ -1,10 +1,8 @@
-import 'dart:ui';
-
-import 'package:gamengine/src/ecs/components/component.dart';
+import 'package:gamengine/gamengine.dart';
 
 abstract class Drawable extends Component {
   int z;
-  Paint? paint;
+  PaintConfig? paint;
 
   Drawable({this.z = 0, this.paint});
 }
