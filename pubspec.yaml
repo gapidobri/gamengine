@@ -12,6 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   just_audio: ^0.10.5
+  path: ^1.9.1
   vector_math: ^2.2.0
 
 dev_dependencies:

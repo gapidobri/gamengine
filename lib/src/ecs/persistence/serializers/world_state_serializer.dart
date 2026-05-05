@@ -143,10 +143,9 @@ class WorldStateSerializer {
         return map;
 
       case List<dynamic> list:
-        for (var i = 0; i < list.length; i++) {
-          list[i] = _serializeEntityValue(list[i]);
-        }
-        return list;
+        return list
+            .map((value) => _serializeEntityValue(value))
+            .toList(growable: false);
 
       case Set<dynamic> set:
         final updated = set.map(_serializeEntityValue).toList(growable: false);

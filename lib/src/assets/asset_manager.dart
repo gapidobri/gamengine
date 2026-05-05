@@ -1,7 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/services.dart';
-import 'package:gamengine/src/assets/asset_image.dart';
+import 'package:gamengine/src/assets/asset.dart';
 
 /// Loads and caches game assets from Flutter's [AssetBundle].
 ///
