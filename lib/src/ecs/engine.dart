@@ -6,6 +6,8 @@ class Engine {
   final Commands _commands = Commands();
   final List<System> _systems = <System>[];
 
+  bool paused = false;
+
   Engine({World? world, EventBus? eventBus})
     : world = world ?? World(),
       eventBus = eventBus ?? EventBus();
@@ -26,15 +28,24 @@ class Engine {
   }
 
   void removeSystem(System system) {
+    system.dispose();
     _systems.remove(system);
   }
 
   void update(double dt) {
+    if (paused) dt = 0;
     eventBus.beginFrame();
     for (final system in _systems) {
+      if (paused && !system.runWhenPaused) continue;
       system.update(dt, world, _commands);
     }
     _commands.flush(world);
     eventBus.endFrame();
+  }
+
+  void dispose() {
+    for (final system in systems) {
+      system.dispose();
+    }
   }
 }

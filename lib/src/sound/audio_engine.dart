@@ -1,6 +1,6 @@
 import 'package:just_audio/just_audio.dart';
 
-class SoundEngine {
+class AudioEngine {
   final Map<String, _SoundChannel> _channels = <String, _SoundChannel>{};
 
   Future<void> play({

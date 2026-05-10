@@ -7,4 +7,8 @@ abstract class System {
   int priority;
 
   void update(double dt, World world, Commands commands) {}
+
+  void dispose() {}
+
+  bool get runWhenPaused => false;
 }

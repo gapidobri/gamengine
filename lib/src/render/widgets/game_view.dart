@@ -37,19 +37,8 @@ class _GameViewState extends State<GameView>
   void initState() {
     super.initState();
     _ticker = createTicker(_onTick);
-    _syncTicker();
-  }
-
-  void _syncTicker() {
-    if (!widget.paused && !_ticker.isActive) {
-      _ticker.start();
-      return;
-    }
-
-    if (widget.paused && _ticker.isActive) {
-      _ticker.stop();
-      _lastTick = null;
-    }
+    widget.engine.paused = widget.paused;
+    _ticker.start();
   }
 
   void _onTick(Duration elapsed) {
@@ -67,12 +56,13 @@ class _GameViewState extends State<GameView>
   @override
   void didUpdateWidget(covariant GameView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _syncTicker();
+    widget.engine.paused = widget.paused;
   }
 
   @override
   void dispose() {
     _ticker.dispose();
+    widget.engine.dispose();
     super.dispose();
   }
 

@@ -17,6 +17,9 @@ class InputSystem<T> extends System {
   int get priority => 100;
 
   @override
+  bool get runWhenPaused => true;
+
+  @override
   void update(double dt, World world, Commands commands) {
     actionState.beginFrame();
 
