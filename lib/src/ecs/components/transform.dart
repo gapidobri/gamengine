@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:math';
 
 import 'package:gamengine/src/ecs/components/component.dart';
 import 'package:vector_math/vector_math_64.dart';
@@ -11,6 +12,7 @@ class Transform extends Component {
   final Vector2 scale;
 
   double get rotation => _rotation;
+  Vector2 get direction => Vector2(sin(rotation), -cos(rotation));
 
   set rotation(double value) {
     if (value >= -math.pi && value <= math.pi) {

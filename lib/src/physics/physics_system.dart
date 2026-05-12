@@ -49,6 +49,7 @@ class PhysicsSystem extends System {
         rigidBody.acceleration.setZero();
         rigidBody.accumulatedForce.setZero();
         rigidBody.accumulatedTorque = 0;
+        rigidBody.computedAngularAcceleration = 0;
         continue;
       }
 
@@ -81,6 +82,7 @@ class PhysicsSystem extends System {
           : 0.0;
       final totalAngularAcceleration =
           rigidBody.angularAcceleration + angularAccelerationFromTorque;
+      rigidBody.computedAngularAcceleration = totalAngularAcceleration;
       rigidBody.angularVelocity += totalAngularAcceleration * step;
 
       if (rigidBody.linearDamping > 0) {

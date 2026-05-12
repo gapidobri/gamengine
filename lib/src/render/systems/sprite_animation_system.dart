@@ -8,7 +8,7 @@ class SpriteAnimationSystem extends System {
   late World _world;
 
   @override
-  int get priority => 950;
+  int get priority => 200;
 
   @override
   void update(double dt, World world, Commands commands) {

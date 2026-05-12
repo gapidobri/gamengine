@@ -20,7 +20,7 @@ class RenderSystem extends System {
   }
 
   @override
-  int get priority => 1000;
+  int get priority => -1000;
 
   List<RenderPass> get passes => List.unmodifiable(_passes);
 

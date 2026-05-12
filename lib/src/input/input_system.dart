@@ -14,7 +14,7 @@ class InputSystem<T> extends System {
   });
 
   @override
-  int get priority => 100;
+  int get priority => 1000;
 
   @override
   bool get runWhenPaused => true;

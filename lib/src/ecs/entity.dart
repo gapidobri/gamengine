@@ -25,7 +25,9 @@ class Entity {
   }
 
   T get<T extends Component>() {
-    return _components[T]! as T;
+    final component = _components[T] as T?;
+    assert(component != null, 'Component $T not found on entity');
+    return component!;
   }
 
   T? tryGet<T extends Component>() {

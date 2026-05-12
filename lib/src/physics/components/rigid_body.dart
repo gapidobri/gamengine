@@ -9,6 +9,7 @@ class RigidBody extends Component {
   double accumulatedTorque;
   double angularVelocity;
   double angularAcceleration;
+  double computedAngularAcceleration;
   double mass;
   double momentOfInertia;
   double linearDamping;
@@ -23,6 +24,7 @@ class RigidBody extends Component {
     this.mass = 1.0,
     this.angularVelocity = 0,
     this.angularAcceleration = 0,
+    this.computedAngularAcceleration = 0,
     this.accumulatedTorque = 0,
     this.momentOfInertia = 0,
     this.linearDamping = 0,

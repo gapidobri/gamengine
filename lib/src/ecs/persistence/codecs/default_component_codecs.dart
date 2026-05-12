@@ -15,6 +15,88 @@ class DefaultWorldComponentCodecs {
     serializer.registerCodec<CameraFollowTarget>(_CameraFollowTargetCodec());
     serializer.registerCodec<CircleShape>(_CircleShapeCodec());
     serializer.registerCodec<RectangleShape>(_RectangleShapeCodec());
+    serializer.registerCodec<PhysicsDebugSettings>(
+      _PhysicsDebugSettingsCodec(),
+    );
+    serializer.registerCodec<PhysicsDebugOverride>(
+      _PhysicsDebugOverrideCodec(),
+    );
+  }
+}
+
+class _PhysicsDebugOverrideCodec extends ComponentCodec<PhysicsDebugOverride> {
+  @override
+  String get typeId => 'physics.debugOverride';
+
+  @override
+  PhysicsDebugOverride decode(Map<String, Object?> data) {
+    return PhysicsDebugOverride(enabled: decodeBool(data, 'enabled'));
+  }
+
+  @override
+  Map<String, Object?> encode(PhysicsDebugOverride component) {
+    return <String, Object?>{'enabled': component.enabled};
+  }
+}
+
+class _PhysicsDebugSettingsCodec extends ComponentCodec<PhysicsDebugSettings> {
+  @override
+  String get typeId => 'physics.debugSettings';
+
+  @override
+  PhysicsDebugSettings decode(Map<String, Object?> data) {
+    return PhysicsDebugSettings(
+      enabled: decodeBool(data, 'enabled') ?? false,
+      showLinearVelocity: decodeBool(data, 'showLinearVelocity') ?? true,
+      showLinearAcceleration:
+          decodeBool(data, 'showLinearAcceleration') ?? true,
+      showAngularVelocity: decodeBool(data, 'showAngularVelocity') ?? true,
+      showAngularAcceleration:
+          decodeBool(data, 'showAngularAcceleration') ?? true,
+      linearVelocityScale: decodeDouble(data, 'linearVelocityScale') ?? 1.0,
+      linearAccelerationScale:
+          decodeDouble(data, 'linearAccelerationScale') ?? 1.0,
+      angularVelocityScale: decodeDouble(data, 'angularVelocityScale') ?? 0.15,
+      angularAccelerationScale:
+          decodeDouble(data, 'angularAccelerationScale') ?? 0.15,
+      angularRingRadius: decodeDouble(data, 'angularRingRadius') ?? 18.0,
+      angularAccelerationRingOffset:
+          decodeDouble(data, 'angularAccelerationRingOffset') ?? 6.0,
+      maxAngularArrowLength:
+          decodeDouble(data, 'maxAngularArrowLength') ?? 48.0,
+      z: decodeInt(data, 'z') ?? 50_000,
+      linearVelocityPaint: decodePaint(data, 'linearVelocityPaint'),
+      linearAccelerationPaint: decodePaint(data, 'linearAccelerationPaint'),
+      angularRingPaint: decodePaint(data, 'angularRingPaint'),
+      angularVelocityPaint: decodePaint(data, 'angularVelocityPaint'),
+      angularAccelerationPaint: decodePaint(data, 'angularAccelerationPaint'),
+    );
+  }
+
+  @override
+  Map<String, Object?> encode(PhysicsDebugSettings component) {
+    return <String, Object?>{
+      'enabled': component.enabled,
+      'showLinearVelocity': component.showLinearVelocity,
+      'showLinearAcceleration': component.showLinearAcceleration,
+      'showAngularVelocity': component.showAngularVelocity,
+      'showAngularAcceleration': component.showAngularAcceleration,
+      'linearVelocityScale': component.linearVelocityScale,
+      'linearAccelerationScale': component.linearAccelerationScale,
+      'angularVelocityScale': component.angularVelocityScale,
+      'angularAccelerationScale': component.angularAccelerationScale,
+      'angularRingRadius': component.angularRingRadius,
+      'angularAccelerationRingOffset': component.angularAccelerationRingOffset,
+      'maxAngularArrowLength': component.maxAngularArrowLength,
+      'z': component.z,
+      'linearVelocityPaint': encodePaint(component.linearVelocityPaint),
+      'linearAccelerationPaint': encodePaint(component.linearAccelerationPaint),
+      'angularRingPaint': encodePaint(component.angularRingPaint),
+      'angularVelocityPaint': encodePaint(component.angularVelocityPaint),
+      'angularAccelerationPaint': encodePaint(
+        component.angularAccelerationPaint,
+      ),
+    };
   }
 }
 
@@ -95,6 +177,8 @@ class _RigidBodyCodec extends ComponentCodec<RigidBody> {
       useGravity: decodeBool(data, 'useGravity')!,
       isStatic: decodeBool(data, 'isStatic')!,
       angularAcceleration: decodeDouble(data, 'angularAcceleration')!,
+      computedAngularAcceleration:
+          decodeDouble(data, 'computedAngularAcceleration') ?? 0.0,
       accumulatedTorque: decodeDouble(data, 'accumulatedTorque')!,
       momentOfInertia: decodeDouble(data, 'momentOfInertia')!,
       lockRotation: decodeBool(data, 'lockRotation')!,
@@ -119,6 +203,7 @@ class _RigidBodyCodec extends ComponentCodec<RigidBody> {
       'mass': component.mass,
       'angularVelocity': component.angularVelocity,
       'angularAcceleration': component.angularAcceleration,
+      'computedAngularAcceleration': component.computedAngularAcceleration,
       'accumulatedTorque': component.accumulatedTorque,
       'momentOfInertia': component.momentOfInertia,
       'lockRotation': component.lockRotation,

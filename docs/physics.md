@@ -10,7 +10,7 @@ import 'package:gamengine/physics.dart';
 
 - Components: `RigidBody`, `CircleCollider`, `RectangleCollider`, `GravitySource`
 - Systems: `PhysicsSystem`, `CollisionSystem`
-- Debug: `PhysicsDebugSystem`, `PhysicsVectorsOverlay`
+- Debug: `PhysicsDebugSettings`, `PhysicsVectorsOverlay`
 - Event: `CollisionEvent`
 
 ## Basic Setup
@@ -21,6 +21,15 @@ final collisions = CollisionSystem(world: world, eventBus: engine.events);
 
 engine.addSystem(physics, 500);
 engine.addSystem(collisions, 490);
+
+// Optional (debug): add a render pass and a settings component to enable
+// physics vectors overlay.
+final renderSystem = engine.systems.whereType<RenderSystem>().first;
+renderSystem.addPass(PhysicsVectorsOverlay());
+
+engine.addEntity(
+  Entity()..add(PhysicsDebugSettings(enabled: true)),
+);
 ```
 
 ## Entity Setup
@@ -30,6 +39,12 @@ final ship = Entity()
   ..add(Transform())
   ..add(RigidBody(mass: 1.2))
   ..add(CircleCollider(radius: 14));
+
+// Optional (debug): override debug visibility per entity.
+// - enabled: null  => follow global PhysicsDebugSettings.enabled
+// - enabled: true  => force show debug for this entity
+// - enabled: false => force hide debug for this entity
+ship.add(PhysicsDebugOverride(enabled: false));
 
 final planet = Entity()
   ..add(Transform())

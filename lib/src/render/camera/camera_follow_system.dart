@@ -17,7 +17,7 @@ class CameraFollowSystem extends System {
   });
 
   @override
-  int get priority => 650;
+  int get priority => 100;
 
   @override
   void update(double dt, World world, Commands commands) {

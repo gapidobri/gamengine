@@ -10,6 +10,10 @@ class Painter extends CustomPainter {
   final RenderQueue queue;
   final Paint _backgroundPaint = Paint();
   final Paint _defaultPaint = Paint()..color = Color(0xFFFFFFFF);
+  final Paint _defaultLinePaint = Paint()
+    ..color = Color(0xFFFFFFFF)
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 1.0;
   final Paint _spritePaint = Paint()
     ..isAntiAlias = false
     ..filterQuality = FilterQuality.none;
@@ -89,6 +93,11 @@ class Painter extends CustomPainter {
           _flushSpriteBatch(canvas, batchSeed);
           batchSeed = null;
           _drawCircle(canvas, command);
+          break;
+        case DrawLineCommand():
+          _flushSpriteBatch(canvas, batchSeed);
+          batchSeed = null;
+          _drawLine(canvas, command);
           break;
         case DrawRectangleCommand():
           _flushSpriteBatch(canvas, batchSeed);
@@ -188,6 +197,10 @@ class Painter extends CustomPainter {
 
   void _drawCircle(Canvas canvas, DrawCircleCommand cmd) {
     canvas.drawCircle(cmd.center, cmd.radius, cmd.paint ?? _defaultPaint);
+  }
+
+  void _drawLine(Canvas canvas, DrawLineCommand cmd) {
+    canvas.drawLine(cmd.a, cmd.b, cmd.paint ?? _defaultLinePaint);
   }
 
   void _drawRectangle(Canvas canvas, DrawRectangleCommand cmd) {
