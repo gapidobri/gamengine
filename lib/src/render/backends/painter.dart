@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:gamengine/src/render/camera/camera_state.dart';
 import 'package:gamengine/src/render/commands/draw_rectangle_command.dart';
+import 'package:gamengine/src/render/commands/draw_text_command.dart';
 import 'package:gamengine/src/render/commands/render_commands.dart';
 import 'package:gamengine/src/render/core/render_queue.dart';
 
@@ -108,6 +109,11 @@ class Painter extends CustomPainter {
           _flushSpriteBatch(canvas, batchSeed);
           batchSeed = null;
           _drawTiledSprite(canvas, command);
+          break;
+        case DrawTextCommand():
+          _flushSpriteBatch(canvas, batchSeed);
+          batchSeed = null;
+          _drawText(canvas, command);
           break;
         default:
           _flushSpriteBatch(canvas, batchSeed);
@@ -309,6 +315,23 @@ class Painter extends CustomPainter {
         );
       }
     }
+
+    canvas.restore();
+  }
+
+  void _drawText(Canvas canvas, DrawTextCommand cmd) {
+    final painter = TextPainter(text: cmd.text, textDirection: .ltr);
+
+    painter.layout();
+
+    final ax = cmd.anchor.dx * painter.size.width;
+    final ay = cmd.anchor.dy * painter.size.height;
+
+    canvas.save();
+    canvas.translate(cmd.position.dx, cmd.position.dy);
+    canvas.rotate(cmd.rotation);
+
+    painter.paint(canvas, Offset(-ax, -ay));
 
     canvas.restore();
   }

@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 
 class InputKeymap<T> {
@@ -12,7 +13,9 @@ class InputKeymap<T> {
     }
   }
 
-  T? getAction(LogicalKeyboardKey key) {
-    return _keymap[key];
-  }
+  T? getAction(LogicalKeyboardKey key) =>
+      _keymap[key] ??
+      key.synonyms
+          .map((key) => _keymap[key])
+          .firstWhereOrNull((a) => a != null);
 }

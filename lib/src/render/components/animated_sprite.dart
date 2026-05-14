@@ -1,8 +1,8 @@
 import 'package:gamengine/src/ecs/components/component.dart';
 
 class AnimatedSprite extends Component {
-  final int frameWidth;
-  final int frameHeight;
+  int frameWidth;
+  int frameHeight;
   int frameCount;
   int firstFrame;
   double framesPerSecond;
