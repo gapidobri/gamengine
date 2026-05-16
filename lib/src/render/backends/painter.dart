@@ -2,8 +2,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:gamengine/src/render/camera/camera_state.dart';
-import 'package:gamengine/src/render/commands/draw_rectangle_command.dart';
-import 'package:gamengine/src/render/commands/draw_text_command.dart';
 import 'package:gamengine/src/render/commands/render_commands.dart';
 import 'package:gamengine/src/render/core/render_queue.dart';
 

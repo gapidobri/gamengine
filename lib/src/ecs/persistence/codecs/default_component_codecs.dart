@@ -107,9 +107,9 @@ class _TransformCodec extends ComponentCodec<Transform> {
   @override
   Transform decode(Map<String, Object?> data) {
     return Transform(
-      position: decodeVector2(data, 'position'),
+      position: decodeVector2(data['position']),
       rotation: decodeDouble(data, 'rotation')!,
-      scale: decodeVector2(data, 'scale', fallback: Vector2.all(1)),
+      scale: decodeVector2(data['scale'], fallback: Vector2.all(1)),
     );
   }
 
@@ -130,9 +130,9 @@ class _LocalTransformCodec extends ComponentCodec<LocalTransform> {
   @override
   LocalTransform decode(Map<String, Object?> data) {
     return LocalTransform(
-      position: decodeVector2(data, 'position'),
+      position: decodeVector2(data['position']),
       rotation: decodeDouble(data, 'rotation')!,
-      scale: decodeVector2(data, 'scale', fallback: Vector2.all(1)),
+      scale: decodeVector2(data['scale'], fallback: Vector2.all(1)),
     );
   }
 
@@ -168,7 +168,7 @@ class _RigidBodyCodec extends ComponentCodec<RigidBody> {
   @override
   RigidBody decode(Map<String, Object?> data) {
     final body = RigidBody(
-      velocity: decodeVector2(data, 'velocity'),
+      velocity: decodeVector2(data['velocity']),
       mass: decodeDouble(data, 'mass')!,
       angularVelocity: decodeDouble(data, 'angularVelocity')!,
       linearDamping: decodeDouble(data, 'linearDamping')!,
@@ -185,10 +185,10 @@ class _RigidBodyCodec extends ComponentCodec<RigidBody> {
     );
 
     body.acceleration.setFrom(
-      decodeVector2(data, 'acceleration', fallback: Vector2.zero()),
+      decodeVector2(data['acceleration'], fallback: Vector2.zero()),
     );
     body.accumulatedForce.setFrom(
-      decodeVector2(data, 'accumulatedForce', fallback: Vector2.zero()),
+      decodeVector2(data['accumulatedForce'], fallback: Vector2.zero()),
     );
 
     return body;

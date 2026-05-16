@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:gamengine/gamengine.dart';
-import 'package:gamengine/src/render/commands/draw_rectangle_command.dart';
 
 class RenderSystem extends System {
   final RenderQueue queue;

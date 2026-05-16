@@ -5,12 +5,7 @@ import 'package:gamengine/gamengine.dart';
 
 List<Object?> encodeVector2(Vector2 value) => <Object?>[value.x, value.y];
 
-Vector2 decodeVector2(
-  Map<String, Object?> data,
-  String key, {
-  Vector2? fallback,
-}) {
-  final value = data[key];
+Vector2 decodeVector2(Object? value, {Vector2? fallback}) {
   if (value is List && value.length >= 2) {
     final x = (value[0] as num?)?.toDouble();
     final y = (value[1] as num?)?.toDouble();
